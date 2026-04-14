@@ -230,7 +230,7 @@ mod windows_impl {
 
         // SAFETY: handle is valid and open; we free preparsed before returning.
         let ok = unsafe { HidD_GetPreparsedData(handle, &raw mut preparsed) };
-        if ok == 0 {
+        if !ok {
             let code = unsafe { GetLastError() };
             tracing::warn!(
                 error_code = code,
@@ -340,7 +340,7 @@ mod windows_impl {
                 )
             };
 
-            if ok == 0 {
+            if !ok {
                 // SAFETY: called immediately after the failing HidD_SetOutputReport.
                 let code = unsafe { GetLastError() };
                 Err(TransportError::WriteFailed(format!(
@@ -374,7 +374,7 @@ mod windows_impl {
                 )
             };
 
-            if ok == 0 {
+            if !ok {
                 let code = unsafe { GetLastError() };
                 Err(TransportError::WriteFailed(format!(
                     "HidD_SetFeature failed (error {code:#010x})"
