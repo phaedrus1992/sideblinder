@@ -1,0 +1,92 @@
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:recommended',
+    ':configMigration',
+    ':disableDependencyDashboard',
+    'customManagers:helmChartYamlAppVersions',
+    ':semanticCommitTypeAll(build)',
+  ],
+
+  // General Settings
+  assigneesFromCodeOwners: true,
+  baseBranchPatterns: [
+    'main',
+  ],
+  branchConcurrentLimit: 5,
+  internalChecksFilter: 'strict',
+  labels: [
+    'dependencies',
+  ],
+  minimumReleaseAge: '7 days',
+  postUpdateOptions: [
+    'gomodTidy',
+    'helmUpdateSubChartArchives',
+    'npmDedupe',
+  ],
+  prCreation: 'not-pending',
+  prHourlyLimit: 0,
+  rangeStrategy: 'bump',
+
+  // Specific Package Rules
+  packageRules: [
+    {
+      groupName: 'auto-merge non-major dependencies',
+      groupSlug: 'all-non-major',
+      matchUpdateTypes: [
+        '!major',
+      ],
+      automerge: true,
+    },
+    {
+      groupName: 'auto-merge developer dependencies',
+      groupSlug: 'dev-dependencies',
+      matchDepTypes: [
+        'devDependencies',
+      ],
+      automerge: true,
+    },
+
+    // Group Rust crate updates together
+    {
+      groupName: 'Rust Dependencies',
+      groupSlug: 'rust-deps',
+      matchManagers: [
+        'cargo',
+      ],
+      matchUpdateTypes: [
+        '!major',
+      ],
+    },
+
+    // Rust toolchain version (from custom regex manager)
+    {
+      groupName: 'Rust Toolchain',
+      groupSlug: 'rust-toolchain',
+      matchDepNames: [
+        'rust',
+      ],
+      matchManagers: [
+        'custom.regex',
+      ],
+    },
+  ],
+
+  // Custom managers for non-standard dependency sources
+  customManagers: [
+    // Rust toolchain version in rust-toolchain.toml
+    {
+      customType: 'regex',
+      managerFilePatterns: [
+        '/(^|/)rust-toolchain\\.toml$/',
+      ],
+      matchStrings: [
+        'channel\\s*=\\s*"(?<currentValue>\\d+\\.\\d+(\\.\\d+)?)"',
+      ],
+      depNameTemplate: 'rust',
+      packageNameTemplate: 'rust-lang/rust',
+      datasourceTemplate: 'github-releases',
+    },
+  ],
+
+}
