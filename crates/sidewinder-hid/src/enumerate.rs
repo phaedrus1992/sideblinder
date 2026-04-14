@@ -243,7 +243,7 @@ mod platform {
         // SAFETY: handle is valid and owned here.
         unsafe { CloseHandle(handle) };
 
-        if ok == 0 {
+        if !ok {
             return None;
         }
 

@@ -385,7 +385,7 @@ fn probe_hid_caps(out: &mut String, handle: windows_sys::Win32::Foundation::HAND
     let mut preparsed: isize = 0;
     // SAFETY: handle is valid; preparsed is out-parameter.
     let ok = unsafe { HidD_GetPreparsedData(handle, &raw mut preparsed) };
-    if ok == 0 {
+    if !ok {
         // SAFETY: called immediately after the failing HidD_GetPreparsedData.
         let code = unsafe { GetLastError() };
         let _ = writeln!(

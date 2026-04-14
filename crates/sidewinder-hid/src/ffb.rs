@@ -143,6 +143,13 @@ pub enum FfbOperation {
 
 // ── Report builders ───────────────────────────────────────────────────────────
 
+/// HID PID report ID for the Device Gain output report.
+///
+/// Callers that need to identify or filter Device Gain reports (e.g. to scale
+/// the gain byte before forwarding) should import this constant rather than
+/// hardcoding `0x0D`.
+pub const REPORT_ID_DEVICE_GAIN: u8 = 0x0D;
+
 /// HID PID report IDs for output reports sent to the physical device.
 mod report_id {
     pub const SET_EFFECT: u8 = 0x01;
@@ -152,7 +159,7 @@ mod report_id {
     pub const SET_CONSTANT_FORCE: u8 = 0x05;
     pub const SET_RAMP_FORCE: u8 = 0x06;
     pub const EFFECT_OPERATION: u8 = 0x0A;
-    pub const DEVICE_GAIN: u8 = 0x0D;
+    pub const DEVICE_GAIN: u8 = super::REPORT_ID_DEVICE_GAIN;
     /// Device Control report — enables or disables actuators.
     pub const DEVICE_CONTROL: u8 = 0x1A;
 }
