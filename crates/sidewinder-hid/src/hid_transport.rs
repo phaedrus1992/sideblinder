@@ -340,14 +340,14 @@ mod windows_impl {
                 )
             };
 
-            if !ok {
+            if ok {
+                Ok(())
+            } else {
                 // SAFETY: called immediately after the failing HidD_SetOutputReport.
                 let code = unsafe { GetLastError() };
                 Err(TransportError::WriteFailed(format!(
                     "HidD_SetOutputReport failed (error {code:#010x})"
                 )))
-            } else {
-                Ok(())
             }
         }
 
@@ -374,13 +374,13 @@ mod windows_impl {
                 )
             };
 
-            if !ok {
+            if ok {
+                Ok(())
+            } else {
                 let code = unsafe { GetLastError() };
                 Err(TransportError::WriteFailed(format!(
                     "HidD_SetFeature failed (error {code:#010x})"
                 )))
-            } else {
-                Ok(())
             }
         }
     }
