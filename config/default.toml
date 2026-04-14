@@ -98,7 +98,7 @@ smoothing = 1
 # -----------------------------------------------------------------------------
 # Hardware calibration
 #
-# Set automatically by running: sidewinder-diag calibrate
+# Set automatically by running: sideblinder-diag calibrate
 #
 # These values tell the app the actual physical range of each axis so it can
 # map correctly to the full virtual range. If you haven't run the calibration

@@ -10,10 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.7.0] - 2026-04-14
 
 ### Added
-- GUI configuration app (`sidewinder-gui`): a desktop window that shows live
+- GUI configuration app (`sideblinder-gui`): a desktop window that shows live
   joystick state and lets you edit axis curves, dead zones, button remaps, and
   FFB settings without touching the config file directly.  The app connects to
-  a running `sidewinder-app` over a named pipe; if the service is not running
+  a running `sideblinder-app` over a named pipe; if the service is not running
   it falls back to reading the device directly.
 - Live Dashboard screen: real-time axis bars, button state, POV hat indicator,
   and FFB gain/enable controls — all reflecting the current joystick input.
@@ -22,9 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   checkbox, each with a live curve preview dot tracking the physical stick.
 - Buttons screen: click-to-select remap grid showing pressed state in green,
   hat-switch direction-to-button assignment, and shift-layer configuration.
-- IPC protocol (`sidewinder-ipc`): a shared named-pipe frame format that lets
+- IPC protocol (`sideblinder-ipc`): a shared named-pipe frame format that lets
   the GUI receive axis values, button state, POV, and connection status from
-  `sidewinder-app` at ~30 Hz with no polling overhead.
+  `sideblinder-app` at ~30 Hz with no polling overhead.
 - Automatic device reconnect: unplugging and replugging the joystick now
   resumes operation without restarting the app. The bridge retries every
   2 seconds and logs when the device disconnects and reconnects.
@@ -47,13 +47,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Options: `linear` (default), `quadratic`, `cubic`, `s-curve`.
 - Axis smoothing: rolling-average filter to reduce jitter on noisy devices.
   Set `smoothing = 5` for light filtering, up to 30 for heavy smoothing.
-- Diagnostics tool (`sidewinder-diag`): inspect raw device data and capture
+- Diagnostics tool (`sideblinder-diag`): inspect raw device data and capture
   reports for troubleshooting.
-- Config validation: run `sidewinder-app config --validate` to check your config
+- Config validation: run `sideblinder-app config --validate` to check your config
   file and see a section-by-section report of any out-of-range values.
-- Config generation: run `sidewinder-app config --generate` to write a fully
+- Config generation: run `sideblinder-app config --generate` to write a fully
   documented default config with inline comments for every setting.
-- Calibration wizard: run `sidewinder-diag calibrate` to walk through each axis
+- Calibration wizard: run `sideblinder-diag calibrate` to walk through each axis
   interactively, measure the physical range, and save it to your config file.
 
 ### Changed

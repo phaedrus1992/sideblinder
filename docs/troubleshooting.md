@@ -46,7 +46,7 @@ not listed, even though the app is running.
    .\scripts\install.ps1
    ```
 4. Restart Windows again.
-5. Start `sidewinder-app` and recheck Game Controllers.
+5. Start `sideblinder-app` and recheck Game Controllers.
 
 > **Note:** test-signing mode must be enabled before installing the driver so that
 > Windows loads it on the next boot.
@@ -69,7 +69,7 @@ direction (or vice versa).
 invert = true
 ```
 
-Run `sidewinder-app config --validate` after editing to confirm the file is
+Run `sideblinder-app config --validate` after editing to confirm the file is
 valid. Changes take effect immediately after you save.
 
 ---
@@ -83,7 +83,7 @@ axis reads non-zero when you are not touching the stick.
 
 1. Run the calibration wizard to establish accurate hardware limits:
    ```powershell
-   sidewinder-diag calibrate
+   sideblinder-diag calibrate
    ```
 2. If the stick drifts at centre, add a small dead zone:
    ```toml
@@ -109,7 +109,7 @@ presses are reported at wrong indices.
 
 1. Open a terminal and run the raw input viewer:
    ```powershell
-   sidewinder-diag raw
+   sideblinder-diag raw
    ```
 2. Note which bytes change when the problem occurs.
 3. [File a bug report](https://github.com/phaedrus/sideblinder/issues/new)
@@ -149,7 +149,7 @@ directory doesn't exist yet or a permissions issue.
 
 1. Make sure the config directory exists:
    ```powershell
-   New-Item -ItemType Directory -Force "$env:APPDATA\Sidewinder"
+   New-Item -ItemType Directory -Force "$env:APPDATA\Sideblinder"
    ```
 2. Restart the app. If the watcher still fails, set `log_level = "debug"` in
    the config and check the log for details.
@@ -164,7 +164,7 @@ reproduce the problem.
 **Step 1 — Run the diagnostics tool:**
 
 ```powershell
-sidewinder-diag diagnose
+sideblinder-diag diagnose
 ```
 
 This prints a structured report of device state, driver state, raw HID bytes,
@@ -172,8 +172,8 @@ and the active config. Copy the full output.
 
 **Step 2 — Include in your bug report:**
 
-- The full output of `sidewinder-diag diagnose`
-- Your config file (find it at `%APPDATA%\Sidewinder\config.toml`)
+- The full output of `sideblinder-diag diagnose`
+- Your config file (find it at `%APPDATA%\Sideblinder\config.toml`)
 - What you expected to happen
 - What actually happened, including any error messages from the tray
 

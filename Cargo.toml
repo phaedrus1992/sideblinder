@@ -1,11 +1,11 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/sidewinder-hid",
-    "crates/sidewinder-app",
-    "crates/sidewinder-diag",
-    "crates/sidewinder-ipc",
-    "crates/sidewinder-gui",
+    "crates/sideblinder-hid",
+    "crates/sideblinder-app",
+    "crates/sideblinder-diag",
+    "crates/sideblinder-ipc",
+    "crates/sideblinder-gui",
 ]
 
 [workspace.package]

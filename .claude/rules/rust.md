@@ -14,21 +14,21 @@ paths:
 
 **unsafe:** Denied at workspace level (`unsafe_code = "deny"`). Use `deny` not `forbid` so that
 `#[expect(unsafe_code, reason = "...")]` can override it in the two platform modules that wrap
-Win32 HID APIs. Keep unsafe blocks minimal and localized to `sidewinder-hid`. Any new unsafe block
+Win32 HID APIs. Keep unsafe blocks minimal and localized to `sideblinder-hid`. Any new unsafe block
 requires a `// SAFETY:` comment explaining the invariant.
 
 **Errors:**
-- `sidewinder-hid` (library): `thiserror` enums with typed variants. Include `# Errors` doc
+- `sideblinder-hid` (library): `thiserror` enums with typed variants. Include `# Errors` doc
   section on all public functions returning `Result`.
-- `sidewinder-app`, `sidewinder-diag` (binaries): `Box<dyn std::error::Error>` for
+- `sideblinder-app`, `sideblinder-diag` (binaries): `Box<dyn std::error::Error>` for
   application-level glue and cross-layer error propagation. (`anyhow` is the goal for new
   code, but has not been added as a dependency yet; update this doc when the migration lands.)
 
 **Async boundaries:**
-- `sidewinder-hid` — synchronous only; no async. HID I/O is blocking by design.
-- `sidewinder-app`, `sidewinder-diag` — tokio runtime; async for event loops and IPC.
+- `sideblinder-hid` — synchronous only; no async. HID I/O is blocking by design.
+- `sideblinder-app`, `sideblinder-diag` — tokio runtime; async for event loops and IPC.
 
-Keep async confined to the binary crates; `sidewinder-hid` must stay pure synchronous.
+Keep async confined to the binary crates; `sideblinder-hid` must stay pure synchronous.
 
 ## Workspace Lint Policy
 
@@ -121,4 +121,4 @@ type. Violating the `Borrow` contract silently breaks `HashMap`/`HashSet` lookup
   (`HidTransport`, `FfbEffect`, `InputReport`)
 - Use enums for state machines and effect types, not boolean flags or magic integers
 - In library crates, use `tracing` (`error!`/`warn!`/`info!`/`debug!`) for all output — never `println!` or `eprintln!`
-- In binary crates with CLI output (e.g. `sidewinder-diag`), `println!` is fine for user-facing output; use `tracing` for diagnostic/debug logging
+- In binary crates with CLI output (e.g. `sideblinder-diag`), `println!` is fine for user-facing output; use `tracing` for diagnostic/debug logging

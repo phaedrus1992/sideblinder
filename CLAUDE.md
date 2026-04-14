@@ -43,6 +43,26 @@ Rules:
   Bad: "`SmoothingBuffer` wired into bridge input loop with hot-reload support"
   Good: "Axis smoothing: reduce jitter by averaging recent inputs."
 
+## Naming Convention
+
+The project is named **Sideblinder**. All our own artifacts must use this name.
+
+- Crate names: `sideblinder-hid`, `sideblinder-app`, `sideblinder-diag`, `sideblinder-gui`,
+  `sideblinder-ipc`, `sideblinder-driver`
+- Binary names: `sideblinder-app`, `sideblinder-diag`, `sideblinder-gui`
+- Rust module paths: `sideblinder_hid`, `sideblinder_app`, `sideblinder_ipc`
+- Type names: `SideblinderDevice`, etc.
+- Runtime artifacts: named pipe `\\.\pipe\SideblinderGui`, device symlink `\\.\SideblinderFFB2`,
+  tray class `SideblinderTray`, config directory `%APPDATA%\Sideblinder` (Windows) /
+  `~/.config/sideblinder` (Linux/macOS)
+
+**Exception:** References to the actual hardware device ("Microsoft Sidewinder Force Feedback 2",
+"Sidewinder FF2", VID/PID comments) must remain unchanged — those are hardware product names, not
+our artifacts. When in doubt: if it refers to the physical joystick, leave it; if it refers to our
+software, rename it.
+
+Do not introduce any new `sidewinder` identifiers for our own artifacts.
+
 ## Issue Tracking
 
 All task tracking uses **GitHub Issues** (`gh issue`), not `yx` / Yaks.

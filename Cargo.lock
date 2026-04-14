@@ -3756,15 +3756,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
 
 [[package]]
-name = "sidewinder-app"
+name = "sideblinder-app"
 version = "0.7.0"
 dependencies = [
  "clap",
  "notify",
  "proptest",
  "serde",
- "sidewinder-hid",
- "sidewinder-ipc",
+ "sideblinder-hid",
+ "sideblinder-ipc",
  "tempfile",
  "thiserror 2.0.18",
  "tokio",
@@ -3775,14 +3775,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "sidewinder-diag"
+name = "sideblinder-diag"
 version = "0.7.0"
 dependencies = [
  "clap",
  "crossterm",
  "proptest",
  "ratatui",
- "sidewinder-hid",
+ "sideblinder-hid",
  "tempfile",
  "thiserror 2.0.18",
  "tokio",
@@ -3793,15 +3793,15 @@ dependencies = [
 ]
 
 [[package]]
-name = "sidewinder-gui"
+name = "sideblinder-gui"
 version = "0.7.0"
 dependencies = [
  "eframe",
  "egui",
  "egui_plot",
- "sidewinder-app",
- "sidewinder-hid",
- "sidewinder-ipc",
+ "sideblinder-app",
+ "sideblinder-hid",
+ "sideblinder-ipc",
  "tempfile",
  "thiserror 2.0.18",
  "tokio",
@@ -3812,7 +3812,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "sidewinder-hid"
+name = "sideblinder-hid"
 version = "0.7.0"
 dependencies = [
  "proptest",
@@ -3822,7 +3822,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "sidewinder-ipc"
+name = "sideblinder-ipc"
 version = "0.7.0"
 dependencies = [
  "thiserror 2.0.18",

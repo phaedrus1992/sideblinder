@@ -1,0 +1,31 @@
+[package]
+name = "sideblinder-gui"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "sideblinder-gui"
+path = "src/main.rs"
+
+[dependencies]
+sideblinder-ipc = { path = "../sideblinder-ipc" }
+sideblinder-hid = { path = "../sideblinder-hid" }
+sideblinder-app = { path = "../sideblinder-app" }
+egui.workspace = true
+eframe.workspace = true
+egui_plot.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+thiserror.workspace = true
+toml_edit.workspace = true
+
+[target.'cfg(target_os = "windows")'.dependencies]
+windows-sys.workspace = true
+
+[dev-dependencies]
+tempfile = "3.27.0"
