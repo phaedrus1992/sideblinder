@@ -313,13 +313,6 @@ async fn input_loop(
 
 // ── FFB loop ──────────────────────────────────────────────────────────────────
 
-/// Report ID for HID PID Device Gain — used to identify and scale gain reports.
-///
-/// Must match `sidewinder_hid::ffb::report_id::DEVICE_GAIN` (0x0D).
-/// Defined here to avoid a cross-crate private-module dependency.
-#[cfg(target_os = "windows")]
-const REPORT_ID_DEVICE_GAIN: u8 = 0x0D;
-
 /// Scale a raw HID Device Gain byte by the user-configured gain factor.
 ///
 /// Both operands are in `[0, 255]`; the maximum product is 255 × 255 = 65 025
@@ -351,7 +344,7 @@ async fn ffb_loop(
     ipc: std::sync::Arc<dyn crate::ipc::DriverIpc>,
     mut config_rx: tokio::sync::watch::Receiver<Config>,
 ) {
-    use sidewinder_hid::ffb::{FfbOperation, build_operation_report};
+    use sidewinder_hid::ffb::{FfbOperation, REPORT_ID_DEVICE_GAIN, build_operation_report};
     use tracing::{debug, error, info};
 
     let mut ffb_enabled_prev = true; // match Config default
