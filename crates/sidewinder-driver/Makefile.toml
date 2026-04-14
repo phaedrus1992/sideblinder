@@ -1,0 +1,1 @@
+extend = "target/wdk-build-config/Makefile.toml"

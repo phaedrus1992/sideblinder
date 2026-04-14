@@ -1,0 +1,67 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/sidewinder-hid",
+    "crates/sidewinder-app",
+    "crates/sidewinder-diag",
+    "crates/sidewinder-ipc",
+    "crates/sidewinder-gui",
+]
+
+[workspace.package]
+version = "0.7.0"
+edition = "2024"
+license = "MIT"
+
+[workspace.dependencies]
+proptest = "1"
+egui = "0.34"
+eframe = "0.34"
+egui_plot = "0.35"
+tokio = { version = "1", features = ["full"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+toml_edit = "0.25"
+thiserror = "2"
+windows-sys = { version = "0.59", features = [
+    "Win32_Devices_HumanInterfaceDevice",
+    "Win32_Devices_DeviceAndDriverInstallation",
+    "Win32_Storage_FileSystem",
+    "Win32_Foundation",
+    "Win32_System_IO",
+    "Win32_System_LibraryLoader",
+    "Win32_Security",
+    "Win32_Graphics_Gdi",
+    "Win32_UI_Shell",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_System_Pipes",
+] }
+
+[workspace.lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+# Panic prevention
+unwrap_used = "deny"
+expect_used = "warn"
+panic = "deny"
+panic_in_result_fn = "deny"
+unimplemented = "deny"
+# No cheating
+allow_attributes = "deny"
+# Code hygiene
+dbg_macro = "deny"
+todo = "deny"
+print_stdout = "deny"
+print_stderr = "deny"
+# Safety
+await_holding_lock = "deny"
+large_futures = "deny"
+exit = "deny"
+mem_forget = "deny"
+# Pedantic relaxations (too noisy)
+module_name_repetitions = "allow"
+similar_names = "allow"
+
+[workspace.lints.rust]
+unsafe_code = "deny"

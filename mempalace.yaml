@@ -1,0 +1,36 @@
+wing: sideblinder
+rooms:
+- name: crates
+  description: Rust project files
+  keywords:
+  - crates
+  - rust
+- name: mw5_ffb
+  description: Force Feedback reference code
+  keywords:
+  - mw5_ffb
+  - force-feedback
+- name: documentation
+  description: Claude-generated plan documentation
+  keywords:
+  - documentation
+  - docs
+- name: scripts
+  description: System scripts
+  keywords:
+  - scripts
+  - install
+  - uninstall
+- name: joystick_gremlin
+  description: Joystick mapping reference code
+  keywords:
+  - joystick_gremlin
+- name: vjoy
+  description: Virtual joystick reference code
+  keywords:
+  - vjoy
+  - joystick
+  - virtual
+- name: general
+  description: Files that don't fit other rooms
+  keywords: []

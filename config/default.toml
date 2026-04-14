@@ -1,0 +1,152 @@
+# =============================================================================
+# Sideblinder default configuration
+#
+# This file documents every available setting. Edit it to customise your
+# joystick behaviour. Changes take effect immediately — no restart needed.
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Axis configuration
+#
+# Each physical axis (x, y, rz, slider) can be tuned independently.
+# All four sections have the same available fields, shown here on [axis_x].
+# Copy any field into [axis_y], [axis_rz], or [axis_slider] to override it.
+# -----------------------------------------------------------------------------
+
+[axis_x]
+# Response curve: controls how the axis moves relative to how you move the stick.
+#
+# "linear"    — moves exactly as you move the stick (default; good starting point)
+# "quadratic" — less sensitive near centre, more responsive at extremes
+#               (good for fine aiming near centre with full deflection available)
+# "cubic"     — very gentle near centre, very aggressive near extremes
+#               (high-precision centre work with very large movements)
+# "s-curve"   — gentler than linear near centre, converges quickly near extremes
+#               (smoothstep formula: 3x² − 2x³; good all-around response)
+#
+# Default: "linear"
+curve = "linear"
+
+# Dead zone: fraction of the full range around centre to treat as zero.
+#
+# Use this if your stick drifts slightly when you're not touching it.
+# 0.00 = no dead zone (every tiny movement registers — use if your stick is precise)
+# 0.05 = 5% dead zone (good starting point for sticks with slight centre drift)
+# 0.10 = 10% dead zone (for sticks that don't return exactly to centre)
+# 0.20 = 20% dead zone (only if the stick has significant play at centre)
+#
+# Valid range: 0.0 to 0.5
+# Default: 0.0
+dead_zone = 0.0
+
+# Scale: multiplies the axis output after dead zone and curve are applied.
+#
+# 1.0 = full range (the axis uses the entire virtual output range)
+# 0.5 = half range (max deflection maps to 50% output — for fine control)
+# 2.0 = double (output is amplified; clips at the virtual device limits)
+#
+# Valid range: 0.0 to 4.0
+# Default: 1.0
+scale = 1.0
+
+# Invert: flips the axis direction.
+#
+# true  = axis output is reversed (push forward → negative; pull back → positive)
+# false = normal direction (push forward → positive)
+#
+# Default: false
+invert = false
+
+# Smoothing: number of samples to average together to reduce jitter.
+#
+# Higher values reduce noise but add a small amount of lag. Start at 1 and
+# increase only if you see jitter on the live display.
+#
+# 1  = no smoothing (raw device values — default, no lag)
+# 5  = light smoothing (barely noticeable lag; good for most joysticks)
+# 15 = heavy smoothing (visible lag; only useful for very noisy devices)
+# 30 = maximum smoothing
+#
+# Valid range: 1 to 30
+# Default: 1
+smoothing = 1
+
+[axis_y]
+curve = "linear"
+dead_zone = 0.0
+scale = 1.0
+invert = false
+smoothing = 1
+
+[axis_rz]
+# Rz is the twist / yaw axis (rotate the stick left or right).
+curve = "linear"
+dead_zone = 0.0
+scale = 1.0
+invert = false
+smoothing = 1
+
+[axis_slider]
+# Slider is the throttle lever on the base of the joystick.
+curve = "linear"
+dead_zone = 0.0
+scale = 1.0
+invert = false
+smoothing = 1
+
+# -----------------------------------------------------------------------------
+# Hardware calibration
+#
+# Set automatically by running: sidewinder-diag calibrate
+#
+# These values tell the app the actual physical range of each axis so it can
+# map correctly to the full virtual range. If you haven't run the calibration
+# wizard, the defaults cover the full signed 16-bit range (-32768 to 32767),
+# which works but may not use 100% of the virtual output range.
+#
+# Edit manually only if you know your hardware limits. The calibration wizard
+# is more accurate.
+# -----------------------------------------------------------------------------
+
+[calibration]
+# X axis hardware range (raw values from the device).
+x_min = -32768
+x_max = 32767
+# Y axis hardware range.
+y_min = -32768
+y_max = 32767
+# Rz / twist axis hardware range.
+rz_min = -32768
+rz_max = 32767
+# Slider / throttle hardware range.
+slider_min = -32768
+slider_max = 32767
+
+# -----------------------------------------------------------------------------
+# Force feedback
+# -----------------------------------------------------------------------------
+
+# ffb_gain: global force feedback strength (0 = off, 255 = full strength).
+#
+# Reduce this if effects feel too strong. The game/sim also has its own FFB
+# gain setting; this is a hardware-level cap applied before the game's value.
+#
+# Valid range: 0 to 255
+# Default: 255 (full strength — let the game control gain)
+ffb_gain = 255
+
+# -----------------------------------------------------------------------------
+# Logging
+# -----------------------------------------------------------------------------
+
+# log_level: controls how much the app writes to its log file.
+#
+# "error"   — only errors (very quiet)
+# "warn"    — errors and warnings
+# "info"    — normal operation messages (default; good for everyday use)
+# "debug"   — detailed trace of every event (large log files; for troubleshooting)
+# "trace"   — maximum verbosity (very large; only for deep debugging)
+#
+# Default: "info"
+log_level = "info"

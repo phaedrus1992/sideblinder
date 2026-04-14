@@ -1,0 +1,12 @@
+[submodule "joystick_gremlin"]
+	path = joystick_gremlin
+	url = https://github.com/WhiteMagic/JoystickGremlin.git
+[submodule "mw5_ffb"]
+	path = mw5_ffb
+	url = https://github.com/HappyFox/MW5_FFB.git
+[submodule "vjoy"]
+	path = vjoy
+	url = https://github.com/BrunnerInnovation/vJoy.git
+[submodule "sidewinder-arduino"]
+	path = sidewinder-arduino
+	url = https://github.com/Poil/sidewinder-arduino

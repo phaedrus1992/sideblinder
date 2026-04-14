@@ -1,0 +1,15 @@
+/target
+__pycache__/
+*.pyc
+*.pdb
+*.sys
+*.dll
+*.cat
+*.cer
+.yaks
+.yaks/
+
+# Release workflow intermediate files (written by .github/scripts/transform_changelog.py)
+CHANGELOG_release.md
+CHANGELOG_next.md
+RELEASE_NOTES.md

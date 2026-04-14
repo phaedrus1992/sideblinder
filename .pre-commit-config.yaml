@@ -1,0 +1,14 @@
+# prek / pre-commit configuration
+# Install hooks with: prek install
+# Run manually with:  prek run --hook-stage push
+
+repos:
+  - repo: local
+    hooks:
+      - id: coverage
+        name: Coverage gate (llvm-cov)
+        language: system
+        entry: bash scripts/coverage-hook.sh
+        stages: [pre-push]
+        pass_filenames: false
+        always_run: true
