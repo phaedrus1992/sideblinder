@@ -21,9 +21,17 @@ pub const IOCTL_SIDEWINDER_GET_FFB: u32 = (0x0022u32 << 16) | (0x0001u32 << 14) 
 #[derive(Debug, Error)]
 pub enum IpcError {
     /// Could not open a handle to the driver device.
+    ///
+    /// Constructed only in `windows_impl`; gated so non-Windows builds don't
+    /// see dead code.
+    #[cfg(target_os = "windows")]
     #[error("{0}")]
     Open(String),
     /// A `DeviceIoControl` call failed.
+    ///
+    /// Constructed only in `windows_impl`; gated so non-Windows builds don't
+    /// see dead code.
+    #[cfg(target_os = "windows")]
     #[error("{0}")]
     Ioctl(String),
 }

@@ -317,7 +317,7 @@ async fn input_loop(
 ///
 /// Must match `sidewinder_hid::ffb::report_id::DEVICE_GAIN` (0x0D).
 /// Defined here to avoid a cross-crate private-module dependency.
-#[cfg(any(target_os = "windows", test))]
+#[cfg(target_os = "windows")]
 const REPORT_ID_DEVICE_GAIN: u8 = 0x0D;
 
 /// Scale a raw HID Device Gain byte by the user-configured gain factor.

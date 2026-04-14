@@ -13,9 +13,9 @@ pub enum DriverStatus {
     Present,
     /// The driver device was not found; app is running in input-only mode.
     ///
-    /// Only constructed inside Windows-specific startup code, but must be part
-    /// of this enum on all platforms so `tray` and `main` can compile without
-    /// conditional imports.
+    /// Constructed in Windows startup code and used in cross-platform test helpers
+    /// (`status_label`). Gated so non-test non-Windows builds don't see dead code.
+    #[cfg(any(target_os = "windows", test))]
     Missing,
 }
 
@@ -38,8 +38,8 @@ pub enum ConnectionStatus {
     Connected,
     /// Device was disconnected; the bridge is retrying.
     ///
-    /// Only constructed inside Windows-specific code paths, but must be part
-    /// of this enum on all platforms so `tray` and `main` can compile without
-    /// conditional imports.
+    /// Constructed in Windows bridge code and used in cross-platform tests.
+    /// Gated so non-test non-Windows builds don't see dead code.
+    #[cfg(any(target_os = "windows", test))]
     Disconnected,
 }
