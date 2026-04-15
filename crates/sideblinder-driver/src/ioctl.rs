@@ -9,8 +9,8 @@
 //!
 //! | Code                          | Direction     | Purpose                      |
 //! |-------------------------------|---------------|------------------------------|
-//! | `IOCTL_SIDEWINDER_UPDATE_INPUT` | App → Driver | Push new joystick state       |
-//! | `IOCTL_SIDEWINDER_GET_FFB`      | App ← Driver | Drain one FFB output report   |
+//! | `IOCTL_SIDEBLINDER_UPDATE_INPUT` | App → Driver | Push new joystick state       |
+//! | `IOCTL_SIDEBLINDER_GET_FFB`      | App ← Driver | Drain one FFB output report   |
 
 use wdk_sys::*;
 
@@ -26,11 +26,11 @@ use crate::input_report::{InputSnapshot, REPORT_LEN};
 // FILE_READ_DATA = 1
 
 /// App → Driver: push a new [`InputSnapshot`] (buffered, write access).
-pub const IOCTL_SIDEWINDER_UPDATE_INPUT: u32 =
+pub const IOCTL_SIDEBLINDER_UPDATE_INPUT: u32 =
     (0x0022u32 << 16) | (0x0002u32 << 14) | (0x0800u32 << 2);
 
 /// App ← Driver: pop the next FFB output report (buffered, read access).
-pub const IOCTL_SIDEWINDER_GET_FFB: u32 =
+pub const IOCTL_SIDEBLINDER_GET_FFB: u32 =
     (0x0022u32 << 16) | (0x0001u32 << 14) | (0x0801u32 << 2);
 
 // ── HID device attributes ─────────────────────────────────────────────────────
@@ -70,10 +70,10 @@ pub unsafe extern "C" fn evt_io_internal_device_control(
             // Feature reports used for PID pool allocation; stub for now.
             STATUS_NOT_SUPPORTED
         }
-        IOCTL_SIDEWINDER_UPDATE_INPUT => {
+        IOCTL_SIDEBLINDER_UPDATE_INPUT => {
             handle_update_input(request, input_buffer_length)
         }
-        IOCTL_SIDEWINDER_GET_FFB => {
+        IOCTL_SIDEBLINDER_GET_FFB => {
             handle_get_ffb(request, output_buffer_length)
         }
         _ => STATUS_NOT_SUPPORTED,
@@ -237,7 +237,7 @@ unsafe fn handle_write_report(request: WDFREQUEST, in_len: usize) -> NTSTATUS {
 
     // The report is a raw HID PID output report destined for the FFB hardware.
     // A production driver would forward this to FfbQueue here; the app reads it
-    // via IOCTL_SIDEWINDER_GET_FFB.  For now we acknowledge receipt.
+    // via IOCTL_SIDEBLINDER_GET_FFB.  For now we acknowledge receipt.
     let _raw = core::slice::from_raw_parts(buf_ptr as *const u8, actual);
 
     STATUS_SUCCESS

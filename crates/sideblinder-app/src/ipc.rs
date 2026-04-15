@@ -1,19 +1,19 @@
 //! Driver IPC layer — pushes input state to and pulls FFB reports from the
-//! Sidewinder UMDF2 driver via `DeviceIoControl`.
+//! Sideblinder UMDF2 driver via `DeviceIoControl`.
 //!
 //! On non-Windows hosts this module compiles to no-ops so the rest of the app
 //! (config, logging, etc.) remains buildable and testable.
 
 use thiserror::Error;
 
-// ── Custom IOCTL codes (must match sidewinder-driver/src/ioctl.rs) ────────────
+// ── Custom IOCTL codes (must match sideblinder-driver/src/ioctl.rs) ────────────
 
 /// App → Driver: push a new input snapshot.
-pub const IOCTL_SIDEWINDER_UPDATE_INPUT: u32 =
+pub const IOCTL_SIDEBLINDER_UPDATE_INPUT: u32 =
     (0x0022u32 << 16) | (0x0002u32 << 14) | (0x0800u32 << 2);
 
 /// App ← Driver: pop the next FFB output report.
-pub const IOCTL_SIDEWINDER_GET_FFB: u32 = (0x0022u32 << 16) | (0x0001u32 << 14) | (0x0801u32 << 2);
+pub const IOCTL_SIDEBLINDER_GET_FFB: u32 = (0x0022u32 << 16) | (0x0001u32 << 14) | (0x0801u32 << 2);
 
 // ── Error ─────────────────────────────────────────────────────────────────────
 
@@ -139,7 +139,7 @@ pub use windows_impl::WindowsDriverIpc;
 )]
 mod windows_impl {
     use super::{
-        DriverIpc, IOCTL_SIDEWINDER_GET_FFB, IOCTL_SIDEWINDER_UPDATE_INPUT, InputSnapshot, IpcError,
+        DriverIpc, IOCTL_SIDEBLINDER_GET_FFB, IOCTL_SIDEBLINDER_UPDATE_INPUT, InputSnapshot, IpcError,
     };
     use std::{mem, sync::Mutex};
     use windows_sys::Win32::{
@@ -234,7 +234,7 @@ mod windows_impl {
             let ok = unsafe {
                 DeviceIoControl(
                     handle,
-                    IOCTL_SIDEWINDER_UPDATE_INPUT,
+                    IOCTL_SIDEBLINDER_UPDATE_INPUT,
                     (&raw const snap).cast(),
                     mem::size_of::<InputSnapshot>() as u32,
                     std::ptr::null_mut(),
@@ -268,7 +268,7 @@ mod windows_impl {
             let ok = unsafe {
                 DeviceIoControl(
                     handle,
-                    IOCTL_SIDEWINDER_GET_FFB,
+                    IOCTL_SIDEBLINDER_GET_FFB,
                     std::ptr::null(),
                     0,
                     buf.as_mut_ptr().cast(),
@@ -332,9 +332,9 @@ mod tests {
 
     #[test]
     fn ioctl_codes_are_nonzero_and_distinct() {
-        assert_ne!(IOCTL_SIDEWINDER_UPDATE_INPUT, 0);
-        assert_ne!(IOCTL_SIDEWINDER_GET_FFB, 0);
-        assert_ne!(IOCTL_SIDEWINDER_UPDATE_INPUT, IOCTL_SIDEWINDER_GET_FFB);
+        assert_ne!(IOCTL_SIDEBLINDER_UPDATE_INPUT, 0);
+        assert_ne!(IOCTL_SIDEBLINDER_GET_FFB, 0);
+        assert_ne!(IOCTL_SIDEBLINDER_UPDATE_INPUT, IOCTL_SIDEBLINDER_GET_FFB);
     }
 
     #[test]

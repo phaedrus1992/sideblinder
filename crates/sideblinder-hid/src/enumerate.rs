@@ -299,7 +299,7 @@ mod tests {
     fn find_sideblinder_none_on_non_windows() {
         let result = find_sideblinder();
         assert!(result.is_ok());
-        // On a non-Windows dev machine there's no Sidewinder attached.
+        // On a non-Windows dev machine there's no Sideblinder attached.
         #[cfg(not(target_os = "windows"))]
         assert!(
             result

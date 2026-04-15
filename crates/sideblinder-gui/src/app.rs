@@ -1,6 +1,6 @@
 //! Root eframe application: layout, navigation, and per-frame update loop.
 //!
-//! `SidewinderApp` renders a left-side navigation panel with three tabs
+//! `SideblinderApp` renders a left-side navigation panel with three tabs
 //! (Dashboard, Axes, Buttons) and delegates rendering to the matching screen
 //! module.  Live data is polled from the `GuiBackend` once per frame and cached
 //! in `latest_frame` so each screen can read it without mutability conflicts.
@@ -30,7 +30,7 @@ enum Screen {
 // ── App ───────────────────────────────────────────────────────────────────────
 
 /// Root application state owned by the eframe runtime.
-pub struct SidewinderApp {
+pub struct SideblinderApp {
     backend: Box<dyn GuiBackend>,
     config_path: PathBuf,
     config: Config,
@@ -38,7 +38,7 @@ pub struct SidewinderApp {
     screen: Screen,
 }
 
-impl SidewinderApp {
+impl SideblinderApp {
     /// Construct the app with the given backend and config path.
     ///
     /// The config file is loaded eagerly; missing files fall back to defaults.
@@ -72,7 +72,7 @@ impl SidewinderApp {
     }
 }
 
-impl eframe::App for SidewinderApp {
+impl eframe::App for SideblinderApp {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         // Check liveness first so a valid frame received on the same tick
         // as a disconnect is not discarded before rendering.

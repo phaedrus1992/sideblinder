@@ -3757,7 +3757,7 @@ checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
 
 [[package]]
 name = "sideblinder-app"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "clap",
  "notify",
@@ -3776,7 +3776,7 @@ dependencies = [
 
 [[package]]
 name = "sideblinder-diag"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "clap",
  "crossterm",
@@ -3794,7 +3794,7 @@ dependencies = [
 
 [[package]]
 name = "sideblinder-gui"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "eframe",
  "egui",
@@ -3813,7 +3813,7 @@ dependencies = [
 
 [[package]]
 name = "sideblinder-hid"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "proptest",
  "thiserror 2.0.18",
@@ -3823,7 +3823,7 @@ dependencies = [
 
 [[package]]
 name = "sideblinder-ipc"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "thiserror 2.0.18",
 ]

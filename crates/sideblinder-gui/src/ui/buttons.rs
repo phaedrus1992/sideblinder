@@ -29,7 +29,7 @@ struct ButtonsUiState {
     selected_phys: Option<usize>,
 }
 
-const STATE_ID: &str = "sidewinder_buttons_ui_state";
+const STATE_ID: &str = "sideblinder_buttons_ui_state";
 
 // ── Public entry point ────────────────────────────────────────────────────────
 

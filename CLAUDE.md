@@ -7,10 +7,11 @@ code changes must include version bumps and a changelog update.
 
 ### Version fields
 
-- Each crate carries its own version in `crates/<name>/Cargo.toml` (inheriting or overriding
-  `[workspace.package] version` in the root `Cargo.toml`).
-- The workspace-level version in the root `Cargo.toml` is bumped to match the highest semver
-  change across all crates in that PR.
+- Each crate carries its own independent version in `crates/<name>/Cargo.toml`. Crates are
+  versioned separately; a change to one crate does not require bumping others.
+- The workspace-level version in the root `Cargo.toml` is also managed independently. It
+  represents the overall project release and is bumped based on the severity of any changes
+  anywhere in the project (not necessarily matching any single crate's version).
 
 ### Bump rules
 
@@ -20,11 +21,13 @@ code changes must include version bumps and a changelog update.
 | New functionality, backwards-compatible | MINOR |
 | Bug fixes, internal refactors, documentation | PATCH |
 
+Apply these rules independently to each affected crate and to the workspace root.
+
 ### Per-PR checklist
 
 Before opening a PR:
-1. Bump the version field of every crate whose public API or behaviour changed.
-2. Bump the workspace-level version to the highest bump level across all modified crates.
+1. Bump the version of every crate whose public API or behaviour changed.
+2. Bump the workspace-level version based on the highest-severity change anywhere in the PR.
 3. Add an entry to `CHANGELOG.md` under the `[Unreleased]` section.
 
 ## Changelog

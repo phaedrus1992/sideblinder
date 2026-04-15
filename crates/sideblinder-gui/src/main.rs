@@ -61,7 +61,7 @@ fn main() -> ExitCode {
         "Sideblinder Settings",
         options,
         Box::new(move |cc| {
-            Ok(Box::new(app::SidewinderApp::new(cc, backend, config_path)))
+            Ok(Box::new(app::SideblinderApp::new(cc, backend, config_path)))
         }),
     )
     .map_or_else(

@@ -26,4 +26,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name }}
-        run: gh release upload "$env:TAG" target/release/sidewinder-app.exe
+        run: gh release upload "$env:TAG" target/release/sideblinder-app.exe

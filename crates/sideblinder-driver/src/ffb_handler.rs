@@ -2,7 +2,7 @@
 //!
 //! When HIDCLASS delivers `IOCTL_HID_WRITE_REPORT`, the raw HID PID output
 //! report is buffered here.  The userspace app drains it by issuing
-//! `IOCTL_SIDEWINDER_GET_FFB` — the driver either completes the request
+//! `IOCTL_SIDEBLINDER_GET_FFB` — the driver either completes the request
 //! immediately with the buffered report, or parks it until the next write.
 
 /// Maximum size of one buffered FFB report (Set Effect is the largest at

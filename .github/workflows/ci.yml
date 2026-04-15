@@ -59,11 +59,20 @@ jobs:
       - name: Build
         run: cargo build --release --locked
 
+      - name: Get version
+        id: version
+        shell: bash
+        run: |
+          VERSION=$(cargo metadata --no-deps --format-version 1 | \
+            python3 -c "import sys,json; pkgs=json.load(sys.stdin)['packages']; \
+            print(next(p['version'] for p in pkgs if p['name']=='sideblinder-app'))")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
       - name: Upload build artifact
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # v7.0.0
         with:
-          name: sidewinder-app-windows
-          path: target/release/sidewinder-app.exe
+          name: sideblinder-app-${{ steps.version.outputs.version }}-windows
+          path: target/release/sideblinder-app.exe
 
   coverage:
     name: Coverage gate

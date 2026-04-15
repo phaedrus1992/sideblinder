@@ -32,7 +32,7 @@ use thiserror::Error;
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-/// Four-byte magic that identifies a Sidewinder capture file.
+/// Four-byte magic that identifies a Sideblinder capture file.
 const MAGIC: &[u8; 4] = b"SWCF";
 
 /// Current file format version.

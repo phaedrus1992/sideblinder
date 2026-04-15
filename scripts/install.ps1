@@ -5,15 +5,15 @@
 
 .DESCRIPTION
     Adds the driver package to the Windows driver store via pnputil, then
-    triggers PnP to install it on the root\SidewinderFFB2 enumerator node.
+    triggers PnP to install it on the root\SideblinderFFB2 enumerator node.
 
 .PARAMETER InfPath
-    Path to the built sidewinder.inf (or compiled .inf from the INX).
-    Defaults to .\sidewinder-driver\sidewinder.inf relative to this script.
+    Path to the built sideblinder.inf (or compiled .inf from the INX).
+    Defaults to .\sideblinder-driver\sideblinder.inf relative to this script.
 
 .EXAMPLE
     .\install.ps1
-    .\install.ps1 -InfPath "C:\build\sidewinder.inf"
+    .\install.ps1 -InfPath "C:\build\sideblinder.inf"
 #>
 param(
     [string]$InfPath = ""
@@ -26,7 +26,7 @@ $ErrorActionPreference = "Stop"
 
 if (-not $InfPath) {
     $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-    $InfPath   = Join-Path $scriptDir "..\crates\sidewinder-driver\sidewinder.inf"
+    $InfPath   = Join-Path $scriptDir "..\crates\sideblinder-driver\sideblinder.inf"
 }
 
 $InfPath = Resolve-Path $InfPath -ErrorAction Stop | Select-Object -ExpandProperty Path
@@ -62,7 +62,7 @@ if (-not $devconPath) {
     exit 0
 }
 
-$installResult = & devcon.exe install "$InfPath" "root\SidewinderFFB2"
+$installResult = & devcon.exe install "$InfPath" "root\SideblinderFFB2"
 if ($LASTEXITCODE -ne 0) {
     Write-Error "devcon install failed (exit $LASTEXITCODE). Output:`n$installResult"
 }
@@ -70,4 +70,4 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host $installResult
 Write-Host ""
 Write-Host "Driver installed successfully."
-Write-Host "The virtual Sidewinder FF2 joystick should now appear in Device Manager."
+Write-Host "The virtual Sideblinder FFB2 joystick should now appear in Device Manager."

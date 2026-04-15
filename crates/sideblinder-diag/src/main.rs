@@ -93,7 +93,7 @@ enum Command {
     /// reports with their capture-relative timestamps.  The file can later
     /// be replayed offline with the `replay` subcommand.
     Capture {
-        /// Output file path (e.g. `sidewinder.swcf`).
+        /// Output file path (e.g. `sideblinder.swcf`).
         file: std::path::PathBuf,
         /// Number of reports to capture before exiting (default: 100).
         #[arg(short, long, default_value_t = 100)]
@@ -206,7 +206,7 @@ fn run_diagnose() -> Result<(), Box<dyn std::error::Error>> {
     std::fs::write(&log_path, &report)?;
 
     // Print to stdout as well so the caller can see the path immediately.
-    println!("=== Sidewinder diagnostic report ===");
+    println!("=== Sideblinder diagnostic report ===");
     println!("{report}");
     println!("--- written to: {} ---", log_path.display());
     Ok(())
@@ -255,7 +255,7 @@ fn build_diagnostic_report() -> String {
             // 2 — Deep-probe the Sidewinder if present.
             let _ = writeln!(out, "--- HID Capabilities ---");
             if let Some(sw) = devices.iter().find(|d| d.is_ff2()) {
-                if probe_sidewinder_device(&mut out, sw).is_err() {
+                if probe_ff2_device(&mut out, sw).is_err() {
                     return out;
                 }
             } else {
@@ -283,7 +283,7 @@ fn build_diagnostic_report() -> String {
 /// stop further probing and return the partial report).
 #[cfg(target_os = "windows")]
 #[expect(unsafe_code, reason = "Win32 CreateFile/CloseHandle FFI calls")]
-fn probe_sidewinder_device(
+fn probe_ff2_device(
     out: &mut String,
     sw: &sideblinder_hid::enumerate::HidDeviceInfo,
 ) -> Result<(), ()> {
@@ -293,7 +293,7 @@ fn probe_sidewinder_device(
         Storage::FileSystem::{CreateFileW, FILE_SHARE_READ, FILE_SHARE_WRITE, OPEN_EXISTING},
     };
 
-    let _ = writeln!(out, "Probing Sidewinder at: {}", sw.path);
+    let _ = writeln!(out, "Probing device at: {}", sw.path);
     let wide: Vec<u16> = sw.path.encode_utf16().chain(std::iter::once(0)).collect();
 
     // Open with GENERIC_READ | GENERIC_WRITE.
@@ -318,7 +318,7 @@ fn probe_sidewinder_device(
             "  Open failed: {} (error {code:#010x})",
             translate_win32_error(code)
         );
-        probe_sidewinder_readonly(out, &wide);
+        probe_ff2_readonly(out, &wide);
         return Err(());
     }
 
@@ -334,7 +334,7 @@ fn probe_sidewinder_device(
 /// Retry opening the device read-only and report the result.
 #[cfg(target_os = "windows")]
 #[expect(unsafe_code, reason = "Win32 CreateFile/CloseHandle FFI calls")]
-fn probe_sidewinder_readonly(out: &mut String, wide: &[u16]) {
+fn probe_ff2_readonly(out: &mut String, wide: &[u16]) {
     use std::fmt::Write as _;
     use windows_sys::Win32::{
         Foundation::{CloseHandle, GetLastError, INVALID_HANDLE_VALUE},
@@ -519,7 +519,7 @@ fn probe_driver_device(out: &mut String) -> Result<(), std::fmt::Error> {
 /// Translate a Win32 error code to a short plain-English description.
 ///
 /// Returns a human-readable string for the most common codes seen during
-/// Sidewinder diagnostics; falls back to a generic message for others.
+/// Sideblinder diagnostics; falls back to a generic message for others.
 #[cfg(target_os = "windows")]
 fn translate_win32_error(code: u32) -> &'static str {
     match code {
@@ -547,7 +547,7 @@ fn build_diagnostic_report() -> String {
     let _ = writeln!(out, "--- Device Detection ---");
     let _ = writeln!(
         out,
-        "Device access requires Windows with the Sidewinder driver installed."
+        "Device access requires Windows with the Sideblinder driver installed."
     );
     let _ = writeln!(
         out,
@@ -561,7 +561,7 @@ fn build_diagnostic_report() -> String {
 
 /// Friendly header that appears at the top of every diagnostic report.
 fn report_header() -> &'static str {
-    "=== Sidewinder Diagnostic Report ===\n\
+    "=== Sideblinder Diagnostic Report ===\n\
      This report helps diagnose connection problems.\n\
      Please copy everything below and paste it into your bug report.\n\
      ========================================="
@@ -724,7 +724,7 @@ fn capture_reports(
     _path: &std::path::Path,
     _count: usize,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    println!("capture requires a connected Sidewinder device (Windows only).");
+    println!("capture requires a connected Sideblinder device (Windows only).");
     Ok(())
 }
 
@@ -800,7 +800,7 @@ fn poll_task_windows(state: &Arc<Mutex<DiagState>>) {
             }
         }
         Err(e) => {
-            tracing::error!("failed to open Sidewinder device: {e}");
+            tracing::error!("failed to open Sideblinder device: {e}");
             lock_state(state).error = Some(format!("open failed: {e}"));
         }
     }
