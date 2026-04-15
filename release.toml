@@ -1,0 +1,45 @@
+# cargo-release configuration
+# https://github.com/crate-ci/cargo-release/blob/master/docs/reference.md
+#
+# Usage (run from a crate directory, or -p <crate> from workspace root):
+#   cargo release patch          # bump patch version
+#   cargo release minor          # bump minor version
+#   cargo release major          # bump major version
+#
+# Always do a dry-run first (default) — add --execute to actually release:
+#   cargo release patch --execute
+#
+# NOTE: pre-release-replacements below run once per released crate.
+# Do NOT use `cargo release --workspace` — it will apply the CHANGELOG
+# replacements multiple times and corrupt the file. Release one crate at a time.
+
+# Push only the tag; never push commits directly to main (branch protection
+# requires PRs + verified signatures, so bot commits would be rejected).
+push = false          # don't push commits — we push only the tag below
+tag-message = "Release v{{version}}"
+
+# Sign the annotated tag so it is verifiable via `git tag -v`.
+# Note: this is NOT the same as signed commits; we don't push commits to main
+# so the branch-protection signed-commits rule is not involved here.
+sign-tag = true
+sign-commit = false   # version bump commit is not pushed, so no signing needed
+
+# Don't publish to crates.io — these are private application crates.
+publish = false
+
+# Commit the version bump locally (needed for the tag to reference it),
+# but do NOT push the commit — only the tag goes to origin.
+pre-release-commit-message = "chore: release {{crate_name}} v{{version}}"
+
+# Keep a Changelog support — cargo-release rewrites [Unreleased] →
+# [{{version}}] - {{date}} in CHANGELOG.md at release time.
+# Replacement strings mix regex backrefs ($1, $2) with cargo-release
+# template variables ({{version}}, {{date}}) — both are required here.
+pre-release-replacements = [
+  { file = "CHANGELOG.md", search = "## \\[Unreleased\\]", replace = "## [Unreleased]\n\n## [{{version}}] - {{date}}", exactly = 1 },
+  { file = "CHANGELOG.md", search = "\\[Unreleased\\]: (https://.*)/compare/v([^/]+)\\.\\.\\.HEAD", replace = "[Unreleased]: $1/compare/v{{version}}...HEAD\n[{{version}}]: $1/compare/v$2...v{{version}}", exactly = 1 },
+]
+
+# When a released crate depends on another workspace crate, fix the dependency
+# version requirement to match the newly released version.
+dependent-version = "fix"
