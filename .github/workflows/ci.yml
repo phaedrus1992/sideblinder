@@ -43,6 +43,7 @@ jobs:
 
   build:
     name: Release Build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: windows-latest
     needs: test
     permissions:
