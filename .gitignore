@@ -8,6 +8,7 @@ __pycache__/
 *.cer
 .yaks
 .yaks/
+.semgrep-results/
 
 # Release workflow intermediate files (written by .github/scripts/transform_changelog.py)
 CHANGELOG_release.md

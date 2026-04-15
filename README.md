@@ -59,7 +59,7 @@ automatically as an HID device.
 
 ### 4. Start the app
 
-Run `sidewinder-app.exe` (or use the start menu shortcut if you created one).
+Run `sideblinder-app.exe` (or use the start menu shortcut if you created one).
 A tray icon appears in the system tray indicating connection status:
 
 | Icon state | Meaning |
@@ -83,7 +83,7 @@ A tray icon appears in the system tray indicating connection status:
 For best accuracy, run the calibration wizard once after installation:
 
 ```powershell
-sidewinder-diag calibrate
+sideblinder-diag calibrate
 ```
 
 Follow the on-screen instructions to move the stick to its limits. Calibration
@@ -100,10 +100,10 @@ The app reads a TOML config file. To generate a documented copy with all
 defaults:
 
 ```powershell
-sidewinder-app config --generate
+sideblinder-app config --generate
 ```
 
-The config file is at `%APPDATA%\Sidewinder\config.toml`. Changes take effect
+The config file is at `%APPDATA%\Sideblinder\config.toml`. Changes take effect
 immediately after saving — no restart needed.
 
 For the full reference of every setting, see **[docs/config.md](docs/config.md)**.
@@ -115,7 +115,7 @@ For the full reference of every setting, see **[docs/config.md](docs/config.md)*
 **Diagnostics:** If something isn't working, run:
 
 ```powershell
-sidewinder-diag diagnose
+sideblinder-diag diagnose
 ```
 
 This produces a full report of device state, driver state, and active config.
@@ -124,7 +124,7 @@ This produces a full report of device state, driver state, and active config.
 for solutions to common problems.
 
 **Bug reports:** [Open an issue](https://github.com/phaedrus/sideblinder/issues/new)
-and include the output of `sidewinder-diag diagnose`.
+and include the output of `sideblinder-diag diagnose`.
 
 ---
 

@@ -1,0 +1,16 @@
+[package]
+name = "sideblinder-hid"
+version = "0.8.0"
+edition.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+windows-sys.workspace = true
+tracing.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true

@@ -7,19 +7,19 @@ whenever you save changes — no restart needed.
 
 | Platform | Default path |
 |----------|-------------|
-| Windows  | `%APPDATA%\Sidewinder\config.toml` |
+| Windows  | `%APPDATA%\Sideblinder\config.toml` |
 
 If the file does not exist the app starts with built-in defaults. To generate
 a documented copy of the defaults, run:
 
 ```powershell
-sidewinder-app config --generate
+sideblinder-app config --generate
 ```
 
 To check your file for errors without restarting the app:
 
 ```powershell
-sidewinder-app config --validate
+sideblinder-app config --validate
 ```
 
 ---
@@ -152,7 +152,7 @@ so it can map correctly to the full virtual output range.
 **You should not edit this section manually.** Run the calibration wizard instead:
 
 ```powershell
-sidewinder-diag calibrate
+sideblinder-diag calibrate
 ```
 
 If you haven't calibrated, the defaults cover the full signed 16-bit range

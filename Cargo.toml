@@ -1,15 +1,17 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/sidewinder-hid",
-    "crates/sidewinder-app",
-    "crates/sidewinder-diag",
-    "crates/sidewinder-ipc",
-    "crates/sidewinder-gui",
+    "crates/sideblinder-hid",
+    "crates/sideblinder-app",
+    "crates/sideblinder-diag",
+    "crates/sideblinder-ipc",
+    "crates/sideblinder-gui",
 ]
 
 [workspace.package]
-version = "0.7.0"
+# Project-level release version, managed independently of individual crates.
+# No crate uses version.workspace = true — each crate carries its own version.
+version = "0.8.0"
 edition = "2024"
 license = "MIT"
 

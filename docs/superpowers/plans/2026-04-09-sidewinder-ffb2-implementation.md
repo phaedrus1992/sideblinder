@@ -90,7 +90,7 @@ members = [
 version = "0.1.0"
 edition = "2024"
 license = "MIT"
-repository = "https://github.com/ranger/sidewinder"
+repository = "https://github.com/phaedrus1992/sidewinder"
 
 [workspace.dependencies]
 tokio = { version = "1", features = ["full"] }
