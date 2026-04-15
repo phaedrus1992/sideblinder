@@ -2,12 +2,13 @@
 """Extract release notes for a version tag from CHANGELOG.md.
 
 Reads VERSION from the environment (with or without a leading 'v').
-Looks for either the matching versioned section [x.y.z] or the [Unreleased]
-section and writes its body to RELEASE_NOTES.md. The CHANGELOG is not modified.
+Looks for the matching versioned section [x.y.z], falling back to [Unreleased]
+only if no versioned sections exist at all. Writes the body to RELEASE_NOTES.md.
+The CHANGELOG is not modified.
 """
 
-import re
 import os
+import re
 import sys
 
 raw_version = os.environ.get("VERSION", "")
@@ -18,21 +19,22 @@ if not raw_version:
 # Accept tags like v0.8.0 or plain 0.8.0
 version = raw_version.lstrip("v")
 
-with open("CHANGELOG.md") as f:
+with open("CHANGELOG.md", encoding="utf-8") as f:
     text = f.read()
 
 # Split on section headings (## [).
 # Interleaved result: [preamble, "## [", "Unreleased]...", "## [", "0.7.0]..."]
 parts = re.split(r"^(## \[)", text, flags=re.MULTILINE)
 
-# Build a list of (heading_suffix, body) pairs from the interleaved split.
+# Build a list of (heading_suffix, body_raw) pairs from the interleaved split.
 sections: list[tuple[str, str]] = []
 i = 1
 while i + 1 < len(parts):
-    chunk = parts[i + 1]          # e.g. "0.8.0] - 2026-04-15\n<body>"
+    chunk = parts[i + 1]  # e.g. "0.8.0] - 2026-04-15\n<body>"
     heading, _, body_raw = chunk.partition("\n")
     sections.append((heading, body_raw))
     i += 2
+
 
 def clean_body(raw: str) -> str:
     lines = raw.splitlines(keepends=True)
@@ -43,36 +45,43 @@ def clean_body(raw: str) -> str:
         lines.pop()
     return "".join(lines)
 
+
 body = ""
+unreleased_body = ""
+found_versioned = False
+
 for heading, body_raw in sections:
-    # Match versioned section: "0.8.0] - 2026-04-15"
-    if heading.startswith(f"{version}]"):
-        body = clean_body(body_raw)
-        break
-    # Fall back to [Unreleased] if no versioned section found yet
     if heading.startswith("Unreleased]"):
-        body = clean_body(body_raw)
-        # Don't break — a versioned section may appear later and takes priority
+        # Save [Unreleased] as a last resort, but never prefer it over a versioned match.
+        unreleased_body = clean_body(body_raw)
+    else:
+        found_versioned = True
+        if heading.startswith(f"{version}]"):
+            body = clean_body(body_raw)
+            break
+
+# Only fall back to [Unreleased] if there are no versioned sections at all.
+# If versioned sections exist but none match, the tag is wrong — don't silently
+# release the wrong content.
+if not body and not found_versioned:
+    body = unreleased_body
 
 if not body:
     print(
-        f"ERROR: CHANGELOG.md has no section for v{version} or [Unreleased]",
+        f"ERROR: CHANGELOG.md has no section for v{version}"
+        + (" (versioned sections exist; [Unreleased] fallback is disabled)" if found_versioned else ""),
         file=sys.stderr,
     )
     sys.exit(1)
 
-real_content = [
-    line for line in body.splitlines()
-    if line.strip() and not line.startswith("#")
-]
-if not real_content:
+if not body.strip():
     print(
         f"ERROR: section for v{version} is empty — nothing to release",
         file=sys.stderr,
     )
     sys.exit(1)
 
-with open("RELEASE_NOTES.md", "w") as f:
+with open("RELEASE_NOTES.md", "w", encoding="utf-8") as f:
     f.write(body.strip() + "\n")
 
-print(f"OK: Extracted release notes for v{version} ({len(real_content)} content lines)")
+print(f"OK: Extracted release notes for v{version}")
