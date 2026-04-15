@@ -9,6 +9,8 @@ members = [
 ]
 
 [workspace.package]
+# Project-level release version, managed independently of individual crates.
+# No crate uses version.workspace = true — each crate carries its own version.
 version = "0.8.0"
 edition = "2024"
 license = "MIT"

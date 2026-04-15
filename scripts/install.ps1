@@ -1,7 +1,7 @@
 #Requires -RunAsAdministrator
 <#
 .SYNOPSIS
-    Install the Sidewinder Force Feedback 2 virtual joystick driver.
+    Install the Sideblinder virtual joystick driver (for the Microsoft Sidewinder Force Feedback 2).
 
 .DESCRIPTION
     Adds the driver package to the Windows driver store via pnputil, then

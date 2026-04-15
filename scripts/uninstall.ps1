@@ -1,7 +1,7 @@
 #Requires -RunAsAdministrator
 <#
 .SYNOPSIS
-    Uninstall the Sidewinder Force Feedback 2 virtual joystick driver.
+    Uninstall the Sideblinder virtual joystick driver (for the Microsoft Sidewinder Force Feedback 2).
 
 .DESCRIPTION
     Removes the device node via devcon, then deletes the driver package from
@@ -46,7 +46,7 @@ foreach ($line in $lines) {
         $candidate = $Matches[1]
         $foundOem  = $true
     }
-    if ($foundOem -and $line -match "Original Name\s*:.*sideblinder") {
+    if ($foundOem -and ($line -match "Original Name\s*:.*sideblinder" -or $line -match "Original Name\s*:.*sidewinder")) {
         $publishedName = $candidate
         break
     }
@@ -54,7 +54,7 @@ foreach ($line in $lines) {
 }
 
 if (-not $publishedName) {
-    Write-Warning "Could not find a driver package with 'sideblinder' in its original name."
+    Write-Warning "Could not find a driver package with 'sideblinder' (or 'sidewinder') in its original name."
     Write-Warning "Run 'pnputil /enum-drivers' to find it manually, then:"
     Write-Warning "  pnputil /delete-driver <oemNNN.inf> /uninstall /force"
     exit 0

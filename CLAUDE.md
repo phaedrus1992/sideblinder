@@ -58,6 +58,7 @@ The project is named **Sideblinder**. All our own artifacts must use this name.
 - Runtime artifacts: named pipe `\\.\pipe\SideblinderGui`, device symlink `\\.\SideblinderFFB2`,
   tray class `SideblinderTray`, config directory `%APPDATA%\Sideblinder` (Windows) /
   `~/.config/sideblinder` (Linux/macOS)
+- Windows PnP: device node hardware ID `Root\SideblinderFFB2`, driver INF file `sideblinder.inf`
 
 **Exception:** References to the actual hardware device ("Microsoft Sidewinder Force Feedback 2",
 "Sidewinder FF2", VID/PID comments) must remain unchanged — those are hardware product names, not
