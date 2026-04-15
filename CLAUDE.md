@@ -30,6 +30,28 @@ Before opening a PR:
 2. Bump the workspace-level version based on the highest-severity change anywhere in the PR.
 3. Add an entry to `CHANGELOG.md` under the `[Unreleased]` section.
 
+### Cutting a release
+
+Use `cargo-release` (install: `cargo install cargo-release --version 1.1.2 --locked`):
+
+```bash
+# Dry run first (no --execute = preview only)
+cargo release minor
+
+# Actually release
+cargo release minor --execute
+```
+
+`cargo release` will:
+1. Bump the version in the root `Cargo.toml`
+2. Rewrite `[Unreleased]` → `[x.y.z] - date` in `CHANGELOG.md`
+3. Commit the changes locally
+4. Create and push an annotated tag (`v0.8.0`)
+
+The GitHub Actions `release.yml` workflow triggers on that tag, extracts the
+release notes from the tagged CHANGELOG, and creates the GitHub Release.
+The tag push does **not** require a PR — tags bypass branch protection.
+
 ## Changelog
 
 All notable changes are recorded in `CHANGELOG.md` at the repo root, following the conventions

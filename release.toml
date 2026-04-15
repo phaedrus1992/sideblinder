@@ -1,0 +1,47 @@
+# cargo-release configuration
+# https://github.com/crate-ci/cargo-release/blob/master/docs/reference.md
+#
+# Usage:
+#   cargo release patch          # bump patch version on the current crate
+#   cargo release minor          # bump minor version
+#   cargo release major          # bump major version
+#   cargo release --workspace patch  # bump all workspace crates together
+#
+# Always do a dry-run first (default) — add --execute to actually release:
+#   cargo release patch --execute
+
+# Push only the tag; never push commits directly to main (branch protection
+# requires PRs + verified signatures, so bot commits would be rejected).
+push-remote = "origin"
+push = false          # don't push commits — we push only the tag below
+tag = true
+tag-push = true
+tag-name = "v{{version}}"
+tag-message = "Release v{{version}}"
+
+# Sign tags with the local GPG key so they satisfy the signed-commits rule.
+sign-tag = true
+sign-commit = false   # version bump commit is not pushed, so no signing needed
+
+# Don't publish to crates.io — these are private application crates.
+publish = false
+
+# Commit the version bump locally (needed for the tag to reference it),
+# but do NOT push the commit — only the tag goes to origin.
+# (cargo-release pushes commits by default; we disable it above.)
+pre-release-commit-message = "chore: release {{crate_name}} v{{version}}"
+
+# Keep a Changelog support — cargo-release will rewrite [Unreleased] →
+# [{{version}}] - {{date}} in CHANGELOG.md automatically.
+pre-release-replacements = [
+  { file = "CHANGELOG.md", search = "## \\[Unreleased\\]", replace = "## [Unreleased]\n\n## [{{version}}] - {{date}}", exactly = 1 },
+  { file = "CHANGELOG.md", search = "\\[Unreleased\\]: (https://.*)/compare/v([^/]+)\\.\\.\\.HEAD", replace = "[Unreleased]: $1/compare/v{{version}}...HEAD\n[{{version}}]: $1/compare/v$2...v{{version}}", exactly = 1 },
+]
+
+# After the release, bump to the next dev version (e.g. 0.8.1-dev).
+# We don't use pre-release suffixes here — just leave it at the release version
+# and bump manually when starting the next change cycle.
+post-release-version-hook = ""
+
+# Confirm before executing — safety net.
+dependent-version = "fix"
