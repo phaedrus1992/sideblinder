@@ -27,30 +27,38 @@ Apply these rules independently to each affected crate and to the workspace root
 
 Before opening a PR:
 1. Bump the version of every crate whose public API or behaviour changed.
-2. Bump the workspace-level version based on the highest-severity change anywhere in the PR.
-3. Add an entry to `CHANGELOG.md` under the `[Unreleased]` section.
+2. Add an entry to `CHANGELOG.md` under the `[Unreleased]` section.
+
+The workspace-level version in root `Cargo.toml` is bumped at release time
+by `cargo release`, not per PR.
 
 ### Cutting a release
 
-Use `cargo-release` (install: `cargo install cargo-release --version 1.1.2 --locked`):
+Install once: `cargo install cargo-release --locked`
+
+Run from the workspace root, targeting the crate to release:
 
 ```bash
 # Dry run first (no --execute = preview only)
-cargo release minor
+cargo release minor -p sideblinder-app
 
 # Actually release
-cargo release minor --execute
+cargo release minor -p sideblinder-app --execute
 ```
 
+Each crate is released independently. Do **not** use `--workspace` — it applies
+CHANGELOG replacements once per crate and corrupts the file. See `release.toml`
+for full configuration.
+
 `cargo release` will:
-1. Bump the version in the root `Cargo.toml`
+1. Bump the crate's version in its `Cargo.toml`
 2. Rewrite `[Unreleased]` → `[x.y.z] - date` in `CHANGELOG.md`
-3. Commit the changes locally
-4. Create and push an annotated tag (`v0.8.0`)
+3. Commit the changes locally (not pushed to `main`)
+4. Create and push an annotated tag (`vX.Y.Z`)
 
 The GitHub Actions `release.yml` workflow triggers on that tag, extracts the
 release notes from the tagged CHANGELOG, and creates the GitHub Release.
-The tag push does **not** require a PR — tags bypass branch protection.
+Tag pushes bypass branch protection — no PR needed.
 
 ## Changelog
 
