@@ -86,11 +86,8 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Install pytest
-        run: pip install pytest==9.0.3
-
       - name: Run script tests
-        run: python3 -m pytest .github/scripts/tests/ -v
+        run: uvx pytest==9.0.3 .github/scripts/tests/ -v
 
   coverage:
     name: Coverage gate
