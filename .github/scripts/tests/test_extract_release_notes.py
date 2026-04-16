@@ -196,6 +196,7 @@ def test_error_when_matching_section_is_empty(tmp_path):
 
     assert result.returncode != 0
     assert not (tmp_path / "RELEASE_NOTES.md").exists()
+    assert "ERROR" in result.stderr
 
 
 def test_error_when_unreleased_section_is_empty(tmp_path):
@@ -204,6 +205,7 @@ def test_error_when_unreleased_section_is_empty(tmp_path):
 
     assert result.returncode != 0
     assert not (tmp_path / "RELEASE_NOTES.md").exists()
+    assert "ERROR" in result.stderr
 
 
 def test_error_when_version_env_var_missing(tmp_path):
