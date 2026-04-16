@@ -36,13 +36,24 @@ by `cargo release`, not per PR.
 
 Install once: `cargo install cargo-release --locked`
 
+**GPG Setup (one-time):** Configure git to sign commits with your GPG key:
+
+```bash
+# List available keys
+gpg --list-secret-keys --keyid-format=long
+
+# Configure git to use your key (replace KEY_ID with the ID from above)
+git config --global user.signingkey KEY_ID
+git config --global commit.gpgsign true
+```
+
 Run from the workspace root, targeting the crate to release:
 
 ```bash
 # Dry run first (no --execute = preview only)
 cargo release minor -p sideblinder-app
 
-# Actually release
+# Actually release (commits and tags are signed and pushed to main)
 cargo release minor -p sideblinder-app --execute
 ```
 
@@ -53,12 +64,12 @@ for full configuration.
 `cargo release` will:
 1. Bump the crate's version in its `Cargo.toml`
 2. Rewrite `[Unreleased]` → `[x.y.z] - date` in `CHANGELOG.md`
-3. Commit the changes locally (not pushed to `main`)
-4. Create and push an annotated tag (`vX.Y.Z`)
+3. Create and push a signed commit to `main`
+4. Create and push a signed annotated tag (`vX.Y.Z`)
 
-The GitHub Actions `release.yml` workflow triggers on that tag, extracts the
-release notes from the tagged CHANGELOG, and creates the GitHub Release.
-Tag pushes bypass branch protection — no PR needed.
+The signed commit satisfies branch protection rules (requires verified signatures).
+The GitHub Actions `release.yml` workflow triggers on the tag, extracts the
+release notes from the CHANGELOG, and creates the GitHub Release.
 
 ## Changelog
 
