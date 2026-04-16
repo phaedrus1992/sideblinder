@@ -26,8 +26,7 @@ sign-commit = true
 # Don't publish to crates.io — these are private application crates.
 publish = false
 
-# Commit the version bump locally (needed for the tag to reference it),
-# but do NOT push the commit — only the tag goes to origin.
+# Commit message for the version-bump commit that is signed and pushed to main.
 pre-release-commit-message = "chore: release {{crate_name}} v{{version}}"
 
 # Keep a Changelog support — cargo-release rewrites [Unreleased] →

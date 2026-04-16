@@ -42,9 +42,39 @@ Install once: `cargo install cargo-release --locked`
 # List available keys
 gpg --list-secret-keys --keyid-format=long
 
-# Configure git to use your key (replace KEY_ID with the ID from above)
+# Configure git to use your key (replace KEY_ID with the ID from above).
+# Note: --global scope affects all repos on your machine. To limit to this repo,
+# run from the sideblinder checkout and omit --global from the second command.
 git config --global user.signingkey KEY_ID
-git config --global commit.gpgsign true
+git config --global commit.gpgsign true  # or 'git config commit.gpgsign true' per-repo
+```
+
+**GitHub key registration:** Export your public key and add it to GitHub so signatures are verified:
+
+```bash
+# Export public key
+gpg --armor --export KEY_ID
+
+# Copy the output and add it to GitHub:
+# GitHub → Settings → SSH and GPG keys → New GPG key
+# (Paste the key including the -----BEGIN and -----END lines)
+
+# Verify the email address in your GPG key matches your GitHub commit email.
+# If mismatched, GitHub will show the signature as "Unverified".
+gpg --list-secret-keys --keyid-format=long --with-colons | grep uid
+```
+
+**macOS users:** Install and configure `pinentry-mac` to avoid hangs during `cargo release --execute`:
+
+```bash
+# Install pinentry-mac (one-time)
+brew install pinentry-mac
+
+# Configure gpg-agent to use it (add to ~/.gnupg/gpg-agent.conf)
+echo "pinentry-program /usr/local/bin/pinentry-mac" >> ~/.gnupg/gpg-agent.conf
+
+# Restart gpg-agent
+gpg-connect-agent reloadagent /bye
 ```
 
 Run from the workspace root, targeting the crate to release:
