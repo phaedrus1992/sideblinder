@@ -74,13 +74,6 @@ if not body:
     )
     sys.exit(1)
 
-if not body.strip():
-    print(
-        f"ERROR: section for v{version} is empty — nothing to release",
-        file=sys.stderr,
-    )
-    sys.exit(1)
-
 with open("RELEASE_NOTES.md", "w", encoding="utf-8") as f:
     f.write(body.strip() + "\n")
 
