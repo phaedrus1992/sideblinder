@@ -13,22 +13,20 @@
 # Do NOT use `cargo release --workspace` — it will apply the CHANGELOG
 # replacements multiple times and corrupt the file. Release one crate at a time.
 
-# Push only the tag; never push commits directly to main (branch protection
-# requires PRs + verified signatures, so bot commits would be rejected).
-push = false          # don't push commits — we push only the tag below
+# Push both commits and tags to main. Commits are signed with the maintainer's
+# GPG key, satisfying branch protection rules.
+push = true           # push commits and tags to main
 tag-message = "Release v{{version}}"
 
-# Sign the annotated tag so it is verifiable via `git tag -v`.
-# Note: this is NOT the same as signed commits; we don't push commits to main
-# so the branch-protection signed-commits rule is not involved here.
+# Sign both the annotated tag and the version-bump commit with the maintainer's
+# GPG key. This allows the commit to pass branch protection (requires verified signatures).
 sign-tag = true
-sign-commit = false   # version bump commit is not pushed, so no signing needed
+sign-commit = true
 
 # Don't publish to crates.io — these are private application crates.
 publish = false
 
-# Commit the version bump locally (needed for the tag to reference it),
-# but do NOT push the commit — only the tag goes to origin.
+# Commit message for the version-bump commit that is signed and pushed to main.
 pre-release-commit-message = "chore: release {{crate_name}} v{{version}}"
 
 # Keep a Changelog support — cargo-release rewrites [Unreleased] →
