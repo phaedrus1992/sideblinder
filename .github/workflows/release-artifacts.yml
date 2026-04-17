@@ -17,7 +17,7 @@ jobs:
           persist-credentials: false
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@cc00eeb07269f3778ca69f08ca1c50f5e1f28eda  # master
+        uses: dtolnay/rust-toolchain@3c5f7eae9d11cdb3f5e09dd9e6a8c5b0e5c5f7ea  # v1
         with:
           toolchain: 1.94.1
 
