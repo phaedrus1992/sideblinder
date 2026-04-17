@@ -1,5 +1,15 @@
 name: CI
 
+# NOTE: every Windows job below forces `-j 1` / CARGO_BUILD_JOBS=1. This is
+# NOT a performance tuning — removing it will break the build. `wdk-macros`
+# 0.5.1 (a transitive dep via `wdk` through `sideblinder-driver`) has a race
+# during parallel proc-macro expansion: two threads call File::create on the
+# same scratch `.lock` file and then LockFileEx, and Windows returns
+# ERROR_INVALID_FUNCTION (os error 1) instead of the expected lock-violation
+# error. See CLAUDE.md -> Building for details. Upstream fix tracked at
+# microsoft/windows-drivers-rs#463 (migrating fs4 -> std::File::lock); once
+# that lands, `-j 1` can be dropped here.
+
 on:
   push:
     branches: [main]
@@ -8,7 +18,7 @@ on:
 jobs:
   clippy:
     name: Clippy
-    runs-on: windows-latest
+    runs-on: windows-2022
     permissions:
       contents: read
     steps:
@@ -23,15 +33,47 @@ jobs:
           toolchain: 1.94.1
           components: clippy
 
+      - name: Install LLVM 17
+        uses: egor-tensin/setup-llvm@v1
+        with:
+          version: 17
+
+      - name: Verify Windows SDK and WDK
+        shell: pwsh
+        run: |
+          Write-Host "Verifying Windows SDK and WDK installation..."
+
+          # Verify WDK headers are available (windows-2022 includes them)
+          $wdk_paths = @(
+              "C:\Program Files (x86)\Windows Kits\10\Include",
+              "C:\Program Files\Windows Kits\10\Include"
+          )
+
+          $found = $false
+          foreach ($path in $wdk_paths) {
+              if (Test-Path $path) {
+                  Write-Host "✓ Found Windows Kits at: $path"
+                  $found = $true
+                  break
+              }
+          }
+
+          if (-not $found) {
+              Write-Host "ERROR: Windows Kits not found - WDK headers are required"
+              exit 1
+          }
+
       - name: Cache dependencies
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4  # v2.9.1
 
       - name: Clippy
-        run: cargo clippy --all-targets --all-features -- -D warnings
+        run: cargo clippy -j 1 --all-targets --all-features -- -D warnings
+        env:
+          CARGO_BUILD_JOBS: 1
 
   test:
     name: Test
-    runs-on: windows-latest
+    runs-on: windows-2022
     needs: clippy
     permissions:
       contents: read
@@ -46,16 +88,48 @@ jobs:
         with:
           toolchain: 1.94.1
 
+      - name: Install LLVM 17
+        uses: egor-tensin/setup-llvm@v1
+        with:
+          version: 17
+
+      - name: Verify Windows SDK and WDK
+        shell: pwsh
+        run: |
+          Write-Host "Verifying Windows SDK and WDK installation..."
+
+          # Verify WDK headers are available (windows-2022 includes them)
+          $wdk_paths = @(
+              "C:\Program Files (x86)\Windows Kits\10\Include",
+              "C:\Program Files\Windows Kits\10\Include"
+          )
+
+          $found = $false
+          foreach ($path in $wdk_paths) {
+              if (Test-Path $path) {
+                  Write-Host "✓ Found Windows Kits at: $path"
+                  $found = $true
+                  break
+              }
+          }
+
+          if (-not $found) {
+              Write-Host "ERROR: Windows Kits not found - WDK headers are required"
+              exit 1
+          }
+
       - name: Cache dependencies
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4  # v2.9.1
 
       - name: Test
-        run: cargo test --locked
+        run: cargo test -j 1 --locked
+        env:
+          CARGO_BUILD_JOBS: 1
 
   build:
     name: Release Build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: windows-latest
+    runs-on: windows-2022
     needs: test
     permissions:
       contents: read
@@ -70,11 +144,43 @@ jobs:
         with:
           toolchain: 1.94.1
 
+      - name: Install LLVM 17
+        uses: egor-tensin/setup-llvm@v1
+        with:
+          version: 17
+
+      - name: Verify Windows SDK and WDK
+        shell: pwsh
+        run: |
+          Write-Host "Verifying Windows SDK and WDK installation..."
+
+          # Verify WDK headers are available (windows-2022 includes them)
+          $wdk_paths = @(
+              "C:\Program Files (x86)\Windows Kits\10\Include",
+              "C:\Program Files\Windows Kits\10\Include"
+          )
+
+          $found = $false
+          foreach ($path in $wdk_paths) {
+              if (Test-Path $path) {
+                  Write-Host "✓ Found Windows Kits at: $path"
+                  $found = $true
+                  break
+              }
+          }
+
+          if (-not $found) {
+              Write-Host "ERROR: Windows Kits not found - WDK headers are required"
+              exit 1
+          }
+
       - name: Cache dependencies
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4  # v2.9.1
 
       - name: Build
-        run: cargo build --release --locked
+        run: cargo build -j 1 --release --locked
+        env:
+          CARGO_BUILD_JOBS: 1
 
       - name: Get version
         id: version
