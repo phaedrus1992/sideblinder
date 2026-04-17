@@ -18,7 +18,7 @@ repository = "https://github.com/phaedrus1992/sideblinder"
 homepage = "https://github.com/phaedrus1992/sideblinder"
 authors = ["Phaedrus"]
 description = "Virtual joystick driver and configuration suite for the Microsoft Sidewinder Force Feedback 2"
-rust-version = "1.87"  # cast_unsigned() and is_multiple_of() stable since 1.87
+rust-version = "1.94"  # matches current development toolchain; minimum is 1.87
 
 [workspace.dependencies]
 proptest = "1.11.0"
