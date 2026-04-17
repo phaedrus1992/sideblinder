@@ -6,8 +6,8 @@ Thank you for your interest in contributing.
 
 ### Prerequisites
 
-- [Rust stable](https://rustup.rs/) (see `rust-toolchain.toml` for the
-  pinned channel)
+- [Rust stable](https://rustup.rs/) (`rust-toolchain.toml` selects the
+  `stable` channel; no specific version is pinned)
 - Windows 11 (required for the `sideblinder-driver` UMDF2 crate; all other
   crates build on Linux and macOS too)
 - [Windows Driver Kit (WDK)](https://learn.microsoft.com/en-us/windows-hardware/drivers/download-the-wdk)
@@ -17,15 +17,15 @@ Thank you for your interest in contributing.
 
 ```bash
 # Build all workspace crates (excludes the driver, which needs the WDK)
-cargo build --workspace
+cargo build --workspace --locked
 
 # Build and test
-cargo test --workspace
+cargo test --workspace --locked
 
 # Lint
-cargo clippy --workspace --all-targets --all-features -- -D warnings
+cargo clippy --all-targets --all-features -- -D warnings
 
-# Format check
+# Format check (not yet enforced in CI but recommended locally)
 cargo fmt --check --all
 ```
 
@@ -72,7 +72,7 @@ Follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventions:
 
 ## Testing
 
-- Run `cargo test --workspace` before committing.
+- Run `cargo test --workspace --locked` before committing.
 - New public API should have unit tests.
 - Use property-based tests (`proptest`) for parsers and serialization.
 - HID/driver code: mock device tests are acceptable; hardware-in-the-loop
@@ -83,13 +83,22 @@ Follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventions:
 See `CLAUDE.md` for the full coding conventions. Key rules:
 
 - `thiserror` for library crates, `anyhow` for binaries.
-- `tracing` for logging in library crates; `println!` is fine for
-  user-facing CLI output in binary crates.
+- `tracing` for all logging. The workspace lint denies `print_stdout` and
+  `print_stderr` — use `tracing` even in binary crates.
 - Newtypes over primitives for domain values.
 - No `unwrap()` or `panic!()` in non-test production paths.
 - `unsafe` blocks require a `// SAFETY:` comment.
 
 ## Versioning
 
-Each crate is versioned independently. See the [Versioning section of
-CLAUDE.md](CLAUDE.md#versioning) for bump rules and the release process.
+Each crate is versioned independently using [Semantic Versioning](https://semver.org/):
+
+| Change type | Bump |
+|-------------|------|
+| Backwards-incompatible API or behaviour change | MAJOR |
+| New functionality, backwards-compatible | MINOR |
+| Bug fixes, internal refactors, documentation | PATCH |
+
+Bump every crate whose public API or behaviour changed. Add a `CHANGELOG.md`
+entry in the same PR. See `CLAUDE.md` for the full release process
+(`cargo release`) and GPG signing requirements.

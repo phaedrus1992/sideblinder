@@ -11,13 +11,17 @@ forwarded back to the physical device.
 
 ### Building
 
-Requires the [Windows Driver Kit (WDK)](https://learn.microsoft.com/en-us/windows-hardware/drivers/download-the-wdk).
-See the top-level [CONTRIBUTING.md](../../CONTRIBUTING.md) for setup
-instructions.
+Requires the [Windows Driver Kit (WDK)](https://learn.microsoft.com/en-us/windows-hardware/drivers/download-the-wdk)
+and [`cargo-make`](https://github.com/sagiegurari/cargo-make):
 
 ```powershell
+cargo install cargo-make --locked
 cargo make           # uses Makefile.toml, invokes wdk-build
 ```
+
+This crate is excluded from the workspace `members` list (it needs a
+separate WDK-aware build toolchain). `cargo build --workspace` will not
+build it.
 
 ### Installation
 

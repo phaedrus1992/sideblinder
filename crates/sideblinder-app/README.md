@@ -13,7 +13,7 @@ the physical joystick.
 Also hosts the named-pipe IPC server so `sideblinder-gui` can receive live
 state and push config changes without a restart.
 
-Runs as a Windows tray application on Windows; headless on Linux and macOS.
+Runs as a tray application on Windows; headless on Linux and macOS.
 
 ## License
 

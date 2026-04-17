@@ -20,7 +20,7 @@ to triage and issue a fix within 90 days of the initial report, depending on
 severity. We will keep you informed of progress throughout.
 
 **Scope:** We accept reports on:
-- `sideblinder-driver` (UMDF2 kernel driver)
+- `sideblinder-driver` (UMDF2 user-mode driver)
 - `sideblinder-hid` (HID parsing and FFB encoding)
 - `sideblinder-app` (background service and IPC)
 - `sideblinder-gui` (settings GUI)
