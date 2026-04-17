@@ -6,14 +6,15 @@
 //! queue until the next push arrives.
 //!
 //! Report layout (matches the descriptor in `hid_descriptor.rs`, no Report ID):
+//! See `docs/hw-spec.md` §2.2 for the authoritative hardware specification.
 //!
-//! | Bytes | Field                         |
-//! |-------|-------------------------------|
-//! | 0–1   | X axis (i16 LE)               |
-//! | 2–3   | Y axis (i16 LE)               |
-//! | 4–5   | Z / throttle (i16 LE)         |
-//! | 6–7   | Rz / rudder  (i16 LE)         |
-//! | 8–9   | Buttons 1–9 (low 9 bits)      |
+//! | Bytes | Field                    |
+//! |-------|--------------------------|
+//! | 0–1   | X axis (i16 LE)          |
+//! | 2–3   | Y axis (i16 LE)          |
+//! | 4–5   | Z axis (i16 LE)          |
+//! | 6–7   | Rz axis (i16 LE)         |
+//! | 8–9   | Buttons 1–9 (low 9 bits) |
 //! | 10    | Hat switch nibble + 4 pad bits |
 
 // ── Snapshot ──────────────────────────────────────────────────────────────────

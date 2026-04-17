@@ -166,7 +166,7 @@ pub static REPORT_DESCRIPTOR: &[u8] = &[
     COLLECTION, COL_APPLICATION,
 
         // Input report (no report ID — report ID 0)
-        // Axes: X, Y, Z (throttle), Rz (rudder) — 16-bit signed, ±32767
+        // Axes: X, Y, Z, Rz — 16-bit signed, ±32767
         USAGE,        GD_X,
         USAGE,        GD_Y,
         USAGE,        GD_Z,

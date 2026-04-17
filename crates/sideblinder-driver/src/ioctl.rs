@@ -17,6 +17,15 @@ use wdk_sys::*;
 use crate::hid_descriptor::{HidClassDescriptor, REPORT_DESCRIPTOR, REPORT_DESCRIPTOR_LEN};
 use crate::input_report::{InputSnapshot, REPORT_LEN};
 
+// HID device attributes structure sent to HIDCLASS
+#[repr(C)]
+struct HID_DEVICE_ATTRIBUTES {
+    Size: ULONG,
+    VendorID: u16,
+    ProductID: u16,
+    VersionNumber: u16,
+}
+
 // ── Custom IOCTL codes ────────────────────────────────────────────────────────
 //
 // CTL_CODE(DeviceType, Function, Method, Access)
@@ -32,6 +41,28 @@ pub const IOCTL_SIDEBLINDER_UPDATE_INPUT: u32 =
 /// App ← Driver: pop the next FFB output report (buffered, read access).
 pub const IOCTL_SIDEBLINDER_GET_FFB: u32 =
     (0x0022u32 << 16) | (0x0001u32 << 14) | (0x0801u32 << 2);
+
+// ── HID IOCTL codes ───────────────────────────────────────────────────────────
+// Standard HID IOCTL codes from hidclass.h
+//
+// CTL_CODE(DeviceType, Function, Method, Access) for HID IOCTL_HID_*
+// DeviceType = 0x0B (FILE_DEVICE_KEYBOARD), Method = 0, Access = 0
+// Each function increments by 4 (method bits are 00 = buffered)
+
+const IOCTL_HID_GET_DEVICE_DESCRIPTOR: ULONG =
+    (0x0B << 16) | (0x00 << 14) | (0x00 << 2) | 0; // Function 0x00
+const IOCTL_HID_GET_REPORT_DESCRIPTOR: ULONG =
+    (0x0B << 16) | (0x00 << 14) | (0x01 << 2) | 0; // Function 0x01
+const IOCTL_HID_GET_DEVICE_ATTRIBUTES: ULONG =
+    (0x0B << 16) | (0x00 << 14) | (0x02 << 2) | 0; // Function 0x02
+const IOCTL_HID_READ_REPORT: ULONG =
+    (0x0B << 16) | (0x00 << 14) | (0x03 << 2) | 0; // Function 0x03
+const IOCTL_HID_WRITE_REPORT: ULONG =
+    (0x0B << 16) | (0x00 << 14) | (0x04 << 2) | 0; // Function 0x04
+const IOCTL_HID_GET_FEATURE: ULONG =
+    (0x0B << 16) | (0x00 << 14) | (0x05 << 2) | 0; // Function 0x05
+const IOCTL_HID_SET_FEATURE: ULONG =
+    (0x0B << 16) | (0x00 << 14) | (0x06 << 2) | 0; // Function 0x06
 
 // ── HID device attributes ─────────────────────────────────────────────────────
 
@@ -79,7 +110,7 @@ pub unsafe extern "C" fn evt_io_internal_device_control(
         _ => STATUS_NOT_SUPPORTED,
     };
 
-    macros::call_unsafe_wdf_function_binding!(WdfRequestComplete, request, status);
+    call_unsafe_wdf_function_binding!(WdfRequestComplete, request, status);
 }
 
 // ── Individual handlers ───────────────────────────────────────────────────────
@@ -93,7 +124,7 @@ unsafe fn handle_get_device_descriptor(request: WDFREQUEST, out_len: usize) -> N
 
     let mut buf_ptr: *mut core::ffi::c_void = core::ptr::null_mut();
     let mut actual: usize = 0;
-    let status = macros::call_unsafe_wdf_function_binding!(
+    let status = call_unsafe_wdf_function_binding!(
         WdfRequestRetrieveOutputBuffer,
         request,
         needed,
@@ -110,7 +141,7 @@ unsafe fn handle_get_device_descriptor(request: WDFREQUEST, out_len: usize) -> N
         needed,
     );
 
-    macros::call_unsafe_wdf_function_binding!(
+    call_unsafe_wdf_function_binding!(
         WdfRequestSetInformation,
         request,
         needed as u64
@@ -126,7 +157,7 @@ unsafe fn handle_get_report_descriptor(request: WDFREQUEST, out_len: usize) -> N
 
     let mut buf_ptr: *mut core::ffi::c_void = core::ptr::null_mut();
     let mut actual: usize = 0;
-    let status = macros::call_unsafe_wdf_function_binding!(
+    let status = call_unsafe_wdf_function_binding!(
         WdfRequestRetrieveOutputBuffer,
         request,
         REPORT_DESCRIPTOR_LEN,
@@ -143,7 +174,7 @@ unsafe fn handle_get_report_descriptor(request: WDFREQUEST, out_len: usize) -> N
         REPORT_DESCRIPTOR_LEN,
     );
 
-    macros::call_unsafe_wdf_function_binding!(
+    call_unsafe_wdf_function_binding!(
         WdfRequestSetInformation,
         request,
         REPORT_DESCRIPTOR_LEN as u64
@@ -160,7 +191,7 @@ unsafe fn handle_get_device_attributes(request: WDFREQUEST, out_len: usize) -> N
 
     let mut buf_ptr: *mut core::ffi::c_void = core::ptr::null_mut();
     let mut actual: usize = 0;
-    let status = macros::call_unsafe_wdf_function_binding!(
+    let status = call_unsafe_wdf_function_binding!(
         WdfRequestRetrieveOutputBuffer,
         request,
         needed,
@@ -177,7 +208,7 @@ unsafe fn handle_get_device_attributes(request: WDFREQUEST, out_len: usize) -> N
     (*attrs).ProductID = PID;
     (*attrs).VersionNumber = VERSION;
 
-    macros::call_unsafe_wdf_function_binding!(
+    call_unsafe_wdf_function_binding!(
         WdfRequestSetInformation,
         request,
         needed as u64
@@ -193,7 +224,7 @@ unsafe fn handle_read_report(request: WDFREQUEST, out_len: usize) -> NTSTATUS {
 
     let mut buf_ptr: *mut core::ffi::c_void = core::ptr::null_mut();
     let mut actual: usize = 0;
-    let status = macros::call_unsafe_wdf_function_binding!(
+    let status = call_unsafe_wdf_function_binding!(
         WdfRequestRetrieveOutputBuffer,
         request,
         REPORT_LEN,
@@ -208,7 +239,7 @@ unsafe fn handle_read_report(request: WDFREQUEST, out_len: usize) -> NTSTATUS {
     let report = InputSnapshot::default().to_report();
     core::ptr::copy_nonoverlapping(report.as_ptr(), buf_ptr as *mut u8, REPORT_LEN);
 
-    macros::call_unsafe_wdf_function_binding!(
+    call_unsafe_wdf_function_binding!(
         WdfRequestSetInformation,
         request,
         REPORT_LEN as u64
@@ -224,7 +255,7 @@ unsafe fn handle_write_report(request: WDFREQUEST, in_len: usize) -> NTSTATUS {
 
     let mut buf_ptr: *mut core::ffi::c_void = core::ptr::null_mut();
     let mut actual: usize = 0;
-    let status = macros::call_unsafe_wdf_function_binding!(
+    let status = call_unsafe_wdf_function_binding!(
         WdfRequestRetrieveInputBuffer,
         request,
         1usize,
@@ -252,7 +283,7 @@ unsafe fn handle_update_input(request: WDFREQUEST, in_len: usize) -> NTSTATUS {
 
     let mut buf_ptr: *mut core::ffi::c_void = core::ptr::null_mut();
     let mut actual: usize = 0;
-    let status = macros::call_unsafe_wdf_function_binding!(
+    let status = call_unsafe_wdf_function_binding!(
         WdfRequestRetrieveInputBuffer,
         request,
         needed,
@@ -271,7 +302,7 @@ unsafe fn handle_update_input(request: WDFREQUEST, in_len: usize) -> NTSTATUS {
 }
 
 /// App ← Driver: hand the app the next buffered FFB output report.
-unsafe fn handle_get_ffb(request: WDFREQUEST, out_len: usize) -> NTSTATUS {
+unsafe fn handle_get_ffb(_request: WDFREQUEST, out_len: usize) -> NTSTATUS {
     use crate::ffb_handler::MAX_FFB_REPORT_BYTES;
 
     if out_len < MAX_FFB_REPORT_BYTES {
