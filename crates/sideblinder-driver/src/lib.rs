@@ -4,12 +4,28 @@
 //! device, translating Sidewinder FFB2 gameport protocol data into standard
 //! HID reports and force-feedback commands.
 
+/// Call a WDF function with automatic error handling.
+///
+/// This macro wraps unsafe WDF function bindings and returns the NTSTATUS result.
+#[macro_export]
+macro_rules! call_unsafe_wdf_function_binding {
+    ($func:ident, $($arg:expr),*) => {{
+        unsafe {
+            wdk_sys::$func($($arg),*)
+        }
+    }};
+}
+
 mod ffb_handler;
 mod hid_descriptor;
 mod input_report;
 mod ioctl;
 
 use wdk_sys::*;
+
+// WDF IO Queue configuration constants
+const WDF_DEFAULT: i32 = 0; // WdfDefault tri-state value
+const WDF_IO_QUEUE_DISPATCH_PARALLEL: i32 = 0; // WdfIoQueueDispatchParallel
 
 /// Driver entry point called by the Windows kernel.
 ///
@@ -30,7 +46,7 @@ pub unsafe extern "system" fn driver_entry(
         DriverPoolTag: 0,
     };
 
-    let status = macros::call_unsafe_wdf_function_binding!(
+    let status = call_unsafe_wdf_function_binding!(
         WdfDriverCreate,
         driver_object,
         registry_path,
@@ -49,11 +65,11 @@ unsafe extern "C" fn evt_driver_device_add(
     mut device_init: PWDFDEVICE_INIT,
 ) -> NTSTATUS {
     // Mark ourselves as a filter driver in the HID stack.
-    macros::call_unsafe_wdf_function_binding!(WdfFdoInitSetFilter, device_init);
+    call_unsafe_wdf_function_binding!(WdfFdoInitSetFilter, device_init);
 
     // Create the device object.
     let mut device: WDFDEVICE = core::ptr::null_mut();
-    let status = macros::call_unsafe_wdf_function_binding!(
+    let status = call_unsafe_wdf_function_binding!(
         WdfDeviceCreate,
         &mut device_init,
         WDF_NO_OBJECT_ATTRIBUTES,
@@ -68,9 +84,9 @@ unsafe extern "C" fn evt_driver_device_add(
     // (HID IOCTLs arrive as internal IOCTLs from HIDCLASS).
     let mut queue_config = WDF_IO_QUEUE_CONFIG {
         Size: core::mem::size_of::<WDF_IO_QUEUE_CONFIG>() as ULONG,
-        PowerManaged: WDF_TRI_STATE::WdfDefault,
+        PowerManaged: WDF_DEFAULT,
         DefaultQueue: BOOLEAN::from(true),
-        DispatchType: WDF_IO_QUEUE_DISPATCH_TYPE::WdfIoQueueDispatchParallel,
+        DispatchType: WDF_IO_QUEUE_DISPATCH_PARALLEL,
         EvtIoInternalDeviceControl: Some(ioctl::evt_io_internal_device_control),
         // Unused callbacks — set to None.
         EvtIoDefault: None,
@@ -80,13 +96,12 @@ unsafe extern "C" fn evt_driver_device_add(
         EvtIoStop: None,
         EvtIoResume: None,
         EvtIoCanceledOnQueue: None,
-        NumberOfPresentedRequests: 0,
         Settings: unsafe { core::mem::zeroed() },
         Driver: core::ptr::null_mut(),
     };
 
     let mut queue: WDFQUEUE = core::ptr::null_mut();
-    let status = macros::call_unsafe_wdf_function_binding!(
+    let status = call_unsafe_wdf_function_binding!(
         WdfIoQueueCreate,
         device,
         &mut queue_config,
@@ -96,3 +111,4 @@ unsafe extern "C" fn evt_driver_device_add(
 
     status
 }
+
