@@ -95,5 +95,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Duplicate button mappings (two physical buttons targeting the same virtual
   button) now produce a clear warning on startup.
 
-[Unreleased]: https://github.com/phaedrus/sideblinder/compare/v0.7.0...HEAD
-[0.7.0]: https://github.com/phaedrus/sideblinder/commits/v0.7.0
+[Unreleased]: https://github.com/phaedrus1992/sideblinder/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/phaedrus1992/sideblinder/commits/v0.7.0
