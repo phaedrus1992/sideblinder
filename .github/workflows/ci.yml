@@ -34,9 +34,15 @@ jobs:
           components: clippy
 
       - name: Install LLVM 17
-        uses: egor-tensin/setup-llvm@v1
-        with:
-          version: 17
+        shell: pwsh
+        run: |
+          $latest17 = choco search llvm --all-versions | Where-Object { $_ -match 'llvm 17\.' } | ForEach-Object { ($_ -split ' ')[1] } | Sort-Object { [version]$_ } -Descending | Select-Object -First 1
+          if ($latest17) {
+            choco install llvm --version="$latest17" -y
+          } else {
+            Write-Host "WARNING: Could not find LLVM 17.x; installing latest available"
+            choco install llvm -y
+          }
 
       - name: Verify Windows SDK and WDK
         shell: pwsh
@@ -89,9 +95,15 @@ jobs:
           toolchain: 1.94.1
 
       - name: Install LLVM 17
-        uses: egor-tensin/setup-llvm@v1
-        with:
-          version: 17
+        shell: pwsh
+        run: |
+          $latest17 = choco search llvm --all-versions | Where-Object { $_ -match 'llvm 17\.' } | ForEach-Object { ($_ -split ' ')[1] } | Sort-Object { [version]$_ } -Descending | Select-Object -First 1
+          if ($latest17) {
+            choco install llvm --version="$latest17" -y
+          } else {
+            Write-Host "WARNING: Could not find LLVM 17.x; installing latest available"
+            choco install llvm -y
+          }
 
       - name: Verify Windows SDK and WDK
         shell: pwsh
@@ -145,9 +157,15 @@ jobs:
           toolchain: 1.94.1
 
       - name: Install LLVM 17
-        uses: egor-tensin/setup-llvm@v1
-        with:
-          version: 17
+        shell: pwsh
+        run: |
+          $latest17 = choco search llvm --all-versions | Where-Object { $_ -match 'llvm 17\.' } | ForEach-Object { ($_ -split ' ')[1] } | Sort-Object { [version]$_ } -Descending | Select-Object -First 1
+          if ($latest17) {
+            choco install llvm --version="$latest17" -y
+          } else {
+            Write-Host "WARNING: Could not find LLVM 17.x; installing latest available"
+            choco install llvm -y
+          }
 
       - name: Verify Windows SDK and WDK
         shell: pwsh
