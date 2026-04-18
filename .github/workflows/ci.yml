@@ -85,8 +85,6 @@ jobs:
         run: |
           cargo clippy --workspace --exclude sideblinder-driver --all-targets --all-features -- -D warnings
           cargo clippy -p sideblinder-driver -j 1 --all-targets --all-features -- -D warnings
-        env:
-          CARGO_BUILD_JOBS: 1
 
   test:
     name: Test
@@ -157,8 +155,6 @@ jobs:
         run: |
           cargo test --workspace --exclude sideblinder-driver --locked
           cargo test -p sideblinder-driver -j 1 --locked
-        env:
-          CARGO_BUILD_JOBS: 1
 
   build:
     name: Release Build
@@ -230,8 +226,6 @@ jobs:
         run: |
           cargo build --workspace --exclude sideblinder-driver --release --locked
           cargo build -p sideblinder-driver -j 1 --release --locked
-        env:
-          CARGO_BUILD_JOBS: 1
 
       - name: Get version
         id: version
