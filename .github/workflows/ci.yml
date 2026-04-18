@@ -36,13 +36,22 @@ jobs:
       - name: Install LLVM 17
         shell: pwsh
         run: |
-          $latest17 = choco search llvm --all-versions | Where-Object { $_ -match 'llvm 17\.' } | ForEach-Object { ($_ -split ' ')[1] } | Sort-Object { [version]$_ } -Descending | Select-Object -First 1
-          if ($latest17) {
-            choco install llvm --version="$latest17" -y
-          } else {
-            Write-Host "WARNING: Could not find LLVM 17.x; installing latest available"
-            choco install llvm -y
+          $llvmVersion = "17.0.6"
+          $llvmUrl = "https://github.com/llvm/llvm-project/releases/download/llvmorg-$llvmVersion/LLVM-$llvmVersion-win64.exe"
+          $llvmInstaller = "$env:TEMP\LLVM-$llvmVersion-win64.exe"
+          Write-Host "Downloading LLVM $llvmVersion from official release..."
+          curl.exe -L -o $llvmInstaller $llvmUrl
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: Failed to download LLVM"
+            exit 1
           }
+          Write-Host "Installing LLVM $llvmVersion..."
+          & $llvmInstaller /S /D="C:\LLVM"
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: Failed to install LLVM"
+            exit 1
+          }
+          Write-Host "LLVM installed successfully"
 
       - name: Verify Windows SDK and WDK
         shell: pwsh
@@ -97,13 +106,22 @@ jobs:
       - name: Install LLVM 17
         shell: pwsh
         run: |
-          $latest17 = choco search llvm --all-versions | Where-Object { $_ -match 'llvm 17\.' } | ForEach-Object { ($_ -split ' ')[1] } | Sort-Object { [version]$_ } -Descending | Select-Object -First 1
-          if ($latest17) {
-            choco install llvm --version="$latest17" -y
-          } else {
-            Write-Host "WARNING: Could not find LLVM 17.x; installing latest available"
-            choco install llvm -y
+          $llvmVersion = "17.0.6"
+          $llvmUrl = "https://github.com/llvm/llvm-project/releases/download/llvmorg-$llvmVersion/LLVM-$llvmVersion-win64.exe"
+          $llvmInstaller = "$env:TEMP\LLVM-$llvmVersion-win64.exe"
+          Write-Host "Downloading LLVM $llvmVersion from official release..."
+          curl.exe -L -o $llvmInstaller $llvmUrl
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: Failed to download LLVM"
+            exit 1
           }
+          Write-Host "Installing LLVM $llvmVersion..."
+          & $llvmInstaller /S /D="C:\LLVM"
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: Failed to install LLVM"
+            exit 1
+          }
+          Write-Host "LLVM installed successfully"
 
       - name: Verify Windows SDK and WDK
         shell: pwsh
@@ -159,13 +177,22 @@ jobs:
       - name: Install LLVM 17
         shell: pwsh
         run: |
-          $latest17 = choco search llvm --all-versions | Where-Object { $_ -match 'llvm 17\.' } | ForEach-Object { ($_ -split ' ')[1] } | Sort-Object { [version]$_ } -Descending | Select-Object -First 1
-          if ($latest17) {
-            choco install llvm --version="$latest17" -y
-          } else {
-            Write-Host "WARNING: Could not find LLVM 17.x; installing latest available"
-            choco install llvm -y
+          $llvmVersion = "17.0.6"
+          $llvmUrl = "https://github.com/llvm/llvm-project/releases/download/llvmorg-$llvmVersion/LLVM-$llvmVersion-win64.exe"
+          $llvmInstaller = "$env:TEMP\LLVM-$llvmVersion-win64.exe"
+          Write-Host "Downloading LLVM $llvmVersion from official release..."
+          curl.exe -L -o $llvmInstaller $llvmUrl
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: Failed to download LLVM"
+            exit 1
           }
+          Write-Host "Installing LLVM $llvmVersion..."
+          & $llvmInstaller /S /D="C:\LLVM"
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: Failed to install LLVM"
+            exit 1
+          }
+          Write-Host "LLVM installed successfully"
 
       - name: Verify Windows SDK and WDK
         shell: pwsh
