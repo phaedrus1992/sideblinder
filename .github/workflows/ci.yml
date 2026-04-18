@@ -103,18 +103,34 @@ jobs:
         with:
           toolchain: 1.94.1
 
+      - name: Cache LLVM 17 installer
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7  # v5.0.4
+        with:
+          path: C:\tools\LLVM-17.0.6-win64.exe
+          key: llvm-17.0.6-win64
+
       - name: Install LLVM 17
         shell: pwsh
         run: |
           $llvmVersion = "17.0.6"
           $llvmUrl = "https://github.com/llvm/llvm-project/releases/download/llvmorg-$llvmVersion/LLVM-$llvmVersion-win64.exe"
-          $llvmInstaller = "$env:TEMP\LLVM-$llvmVersion-win64.exe"
-          Write-Host "Downloading LLVM $llvmVersion from official release..."
-          curl.exe -L -o $llvmInstaller $llvmUrl
-          if ($LASTEXITCODE -ne 0) {
-            Write-Host "ERROR: Failed to download LLVM"
-            exit 1
+          $llvmInstaller = "C:\tools\LLVM-$llvmVersion-win64.exe"
+          $toolsDir = "C:\tools"
+
+          if (-not (Test-Path $llvmInstaller)) {
+            if (-not (Test-Path $toolsDir)) {
+              New-Item -ItemType Directory -Path $toolsDir -Force | Out-Null
+            }
+            Write-Host "Downloading LLVM $llvmVersion from official release..."
+            curl.exe -L -o $llvmInstaller $llvmUrl
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "ERROR: Failed to download LLVM"
+              exit 1
+            }
+          } else {
+            Write-Host "Using cached LLVM installer"
           }
+
           Write-Host "Installing LLVM $llvmVersion..."
           & $llvmInstaller /S /D="C:\LLVM"
           if ($LASTEXITCODE -ne 0) {
@@ -174,18 +190,34 @@ jobs:
         with:
           toolchain: 1.94.1
 
+      - name: Cache LLVM 17 installer
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7  # v5.0.4
+        with:
+          path: C:\tools\LLVM-17.0.6-win64.exe
+          key: llvm-17.0.6-win64
+
       - name: Install LLVM 17
         shell: pwsh
         run: |
           $llvmVersion = "17.0.6"
           $llvmUrl = "https://github.com/llvm/llvm-project/releases/download/llvmorg-$llvmVersion/LLVM-$llvmVersion-win64.exe"
-          $llvmInstaller = "$env:TEMP\LLVM-$llvmVersion-win64.exe"
-          Write-Host "Downloading LLVM $llvmVersion from official release..."
-          curl.exe -L -o $llvmInstaller $llvmUrl
-          if ($LASTEXITCODE -ne 0) {
-            Write-Host "ERROR: Failed to download LLVM"
-            exit 1
+          $llvmInstaller = "C:\tools\LLVM-$llvmVersion-win64.exe"
+          $toolsDir = "C:\tools"
+
+          if (-not (Test-Path $llvmInstaller)) {
+            if (-not (Test-Path $toolsDir)) {
+              New-Item -ItemType Directory -Path $toolsDir -Force | Out-Null
+            }
+            Write-Host "Downloading LLVM $llvmVersion from official release..."
+            curl.exe -L -o $llvmInstaller $llvmUrl
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "ERROR: Failed to download LLVM"
+              exit 1
+            }
+          } else {
+            Write-Host "Using cached LLVM installer"
           }
+
           Write-Host "Installing LLVM $llvmVersion..."
           & $llvmInstaller /S /D="C:\LLVM"
           if ($LASTEXITCODE -ne 0) {
