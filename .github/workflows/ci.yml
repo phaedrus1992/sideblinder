@@ -1,12 +1,12 @@
 name: CI
 
-# NOTE: every Windows job below forces `-j 1` / CARGO_BUILD_JOBS=1. This is
-# NOT a performance tuning — removing it will break the build. `wdk-macros`
-# 0.5.1 (a transitive dep via `wdk` through `sideblinder-driver`) has a race
-# during parallel proc-macro expansion: two threads call File::create on the
-# same scratch `.lock` file and then LockFileEx, and Windows returns
-# ERROR_INVALID_FUNCTION (os error 1) instead of the expected lock-violation
-# error. See CLAUDE.md -> Building for details. Upstream fix tracked at
+# NOTE: Windows jobs build sideblinder-driver with `-j 1`. This is NOT a
+# performance tuning — removing it will break the build. `wdk-macros` 0.5.1
+# (a transitive dep via `wdk`) has a race during parallel proc-macro
+# expansion: two threads call File::create on the same scratch `.lock` file
+# and then LockFileEx, and Windows returns ERROR_INVALID_FUNCTION (os error 1)
+# instead of the expected lock-violation error. Other crates build in parallel.
+# See CLAUDE.md -> Building for details. Upstream fix tracked at
 # microsoft/windows-drivers-rs#463 (migrating fs4 -> std::File::lock); once
 # that lands, `-j 1` can be dropped here.
 
@@ -82,7 +82,9 @@ jobs:
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4  # v2.9.1
 
       - name: Clippy
-        run: cargo clippy -j 1 --all-targets --all-features -- -D warnings
+        run: |
+          cargo clippy --workspace --exclude sideblinder-driver --all-targets --all-features -- -D warnings
+          cargo clippy -p sideblinder-driver -j 1 --all-targets --all-features -- -D warnings
         env:
           CARGO_BUILD_JOBS: 1
 
@@ -152,7 +154,9 @@ jobs:
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4  # v2.9.1
 
       - name: Test
-        run: cargo test -j 1 --locked
+        run: |
+          cargo test --workspace --exclude sideblinder-driver --locked
+          cargo test -p sideblinder-driver -j 1 --locked
         env:
           CARGO_BUILD_JOBS: 1
 
@@ -223,7 +227,9 @@ jobs:
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4  # v2.9.1
 
       - name: Build
-        run: cargo build -j 1 --release --locked
+        run: |
+          cargo build --workspace --exclude sideblinder-driver --release --locked
+          cargo build -p sideblinder-driver -j 1 --release --locked
         env:
           CARGO_BUILD_JOBS: 1
 
