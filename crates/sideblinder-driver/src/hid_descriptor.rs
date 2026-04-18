@@ -601,6 +601,8 @@ impl Default for HidClassDescriptor {
 mod tests {
     use super::*;
 
+    #[expect(clippy::unwrap_used, reason = "test code — panics are the failure mode")]
+
     #[test]
     fn report_descriptor_is_nonempty() {
         assert!(!REPORT_DESCRIPTOR.is_empty());

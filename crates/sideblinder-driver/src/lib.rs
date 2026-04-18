@@ -1,3 +1,5 @@
+#![expect(unsafe_code, reason = "UMDF2 driver interface requires unsafe FFI bindings")]
+
 //! Sidewinder Force Feedback 2 — UMDF2 HID minidriver
 //!
 //! This crate implements a Windows UMDF2 driver that acts as a virtual HID

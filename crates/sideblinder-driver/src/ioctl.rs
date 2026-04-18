@@ -1,3 +1,5 @@
+#![expect(unsafe_code, reason = "WDF/HID IOCTL handling requires unsafe FFI bindings")]
+
 //! IOCTL dispatch for HID minidriver requests.
 //!
 //! HIDCLASS sends internal device control requests (IOCTLs) to the minidriver
@@ -110,7 +112,14 @@ pub unsafe extern "C" fn evt_io_internal_device_control(
         _ => STATUS_NOT_SUPPORTED,
     };
 
-    call_unsafe_wdf_function_binding!(WdfRequestComplete, request, status);
+    // SAFETY: WdfRequestComplete must only be called once per request and only from
+    // the callback that received it. We're in the dispatcher that was handed this request
+    // by UMDF, and we complete it exactly once before returning.
+    let completion_status = call_unsafe_wdf_function_binding!(WdfRequestComplete, request, status);
+    // WdfRequestComplete can fail if the request is invalid or already completed,
+    // but there's no way to propagate the error from this callback. In a production
+    // driver, this would be logged to WMI or event tracing.
+    let _ = completion_status;
 }
 
 // ── Individual handlers ───────────────────────────────────────────────────────
@@ -141,13 +150,13 @@ unsafe fn handle_get_device_descriptor(request: WDFREQUEST, out_len: usize) -> N
         needed,
     );
 
-    call_unsafe_wdf_function_binding!(
+    let status = call_unsafe_wdf_function_binding!(
         WdfRequestSetInformation,
         request,
         needed as u64
     );
 
-    STATUS_SUCCESS
+    if NT_SUCCESS(status) { STATUS_SUCCESS } else { status }
 }
 
 unsafe fn handle_get_report_descriptor(request: WDFREQUEST, out_len: usize) -> NTSTATUS {
@@ -174,13 +183,13 @@ unsafe fn handle_get_report_descriptor(request: WDFREQUEST, out_len: usize) -> N
         REPORT_DESCRIPTOR_LEN,
     );
 
-    call_unsafe_wdf_function_binding!(
+    let status = call_unsafe_wdf_function_binding!(
         WdfRequestSetInformation,
         request,
         REPORT_DESCRIPTOR_LEN as u64
     );
 
-    STATUS_SUCCESS
+    if NT_SUCCESS(status) { STATUS_SUCCESS } else { status }
 }
 
 unsafe fn handle_get_device_attributes(request: WDFREQUEST, out_len: usize) -> NTSTATUS {
@@ -208,13 +217,13 @@ unsafe fn handle_get_device_attributes(request: WDFREQUEST, out_len: usize) -> N
     (*attrs).ProductID = PID;
     (*attrs).VersionNumber = VERSION;
 
-    call_unsafe_wdf_function_binding!(
+    let status = call_unsafe_wdf_function_binding!(
         WdfRequestSetInformation,
         request,
         needed as u64
     );
 
-    STATUS_SUCCESS
+    if NT_SUCCESS(status) { STATUS_SUCCESS } else { status }
 }
 
 unsafe fn handle_read_report(request: WDFREQUEST, out_len: usize) -> NTSTATUS {
@@ -239,13 +248,13 @@ unsafe fn handle_read_report(request: WDFREQUEST, out_len: usize) -> NTSTATUS {
     let report = InputSnapshot::default().to_report();
     core::ptr::copy_nonoverlapping(report.as_ptr(), buf_ptr as *mut u8, REPORT_LEN);
 
-    call_unsafe_wdf_function_binding!(
+    let status = call_unsafe_wdf_function_binding!(
         WdfRequestSetInformation,
         request,
         REPORT_LEN as u64
     );
 
-    STATUS_SUCCESS
+    if NT_SUCCESS(status) { STATUS_SUCCESS } else { status }
 }
 
 unsafe fn handle_write_report(request: WDFREQUEST, in_len: usize) -> NTSTATUS {

@@ -52,13 +52,24 @@ impl FfbReport {
 /// references (`&self`). This is safe because the UMDF driver framework
 /// guarantees serialization: only one thread calls `push` at a time
 /// (EvtIoWrite callback) and only one thread calls `pop` at a time
-/// (EvtIoDeviceControl callback for GET_FFB).
+/// (EvtIoDeviceControl callback for GET_FFB). Despite containing UnsafeCell
+/// (which is !Sync), concurrent push/pop across different threads is safe
+/// because UMDF never calls both simultaneously.
 #[expect(unsafe_code, reason = "UnsafeCell required for interior mutability in UMDF callback context")]
 pub struct FfbQueue {
     buf: [core::cell::UnsafeCell<FfbReport>; Self::CAPACITY],
     head: core::sync::atomic::AtomicUsize, // next write position
     tail: core::sync::atomic::AtomicUsize, // next read position
 }
+
+// SAFETY: FfbQueue contains UnsafeCell, which is !Sync by default. However,
+// safe concurrent access is guaranteed by UMDF's callback serialization:
+// - Only one EvtIoWrite (push) callback can execute at a time
+// - Only one EvtIoDeviceControl (pop) callback can execute at a time
+// - UMDF never calls these callbacks concurrently on different threads
+// Therefore, the atomics coordinate access correctly and the interior mutability
+// is safe despite the apparent cross-thread sharing.
+unsafe impl Sync for FfbQueue {}
 
 impl FfbQueue {
     const CAPACITY: usize = 16;
@@ -124,6 +135,8 @@ impl FfbQueue {
 mod tests {
     use super::*;
 
+    #[expect(clippy::unwrap_used, reason = "test code — panics are the failure mode")]
+
     #[test]
     fn from_bytes_and_round_trip() {
         let src = [0x05u8, 0x01, 0x00, 0xFF, 0x7F];
@@ -149,7 +162,7 @@ mod tests {
 
     #[test]
     fn queue_push_pop_fifo() {
-        let mut q = FfbQueue::new();
+        let q = FfbQueue::new();
         assert!(!q.is_nonempty());
 
         let r1 = FfbReport::from_bytes(&[0x01, 0xAA]);

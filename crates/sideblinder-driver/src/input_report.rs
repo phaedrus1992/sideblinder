@@ -156,6 +156,8 @@ fn unpack_snapshot(v: u64) -> InputSnapshot {
 mod tests {
     use super::*;
 
+    #[expect(clippy::expect_used, reason = "test code — panics are the failure mode")]
+
     #[test]
     fn default_report_is_all_zeros_except_pov() {
         let snap = InputSnapshot::default();
