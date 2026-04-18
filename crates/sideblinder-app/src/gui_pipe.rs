@@ -1,7 +1,7 @@
 //! Named-pipe server that broadcasts `GuiFrame` snapshots to `sideblinder-gui`.
 //!
 //! Spawns a background tokio task that creates `\\.\pipe\SideblinderGui`, accepts
-//! one client at a time, and streams a 26-byte framed [`sideblinder_ipc::GuiFrame`]
+//! one client at a time, and streams a 27-byte framed [`sideblinder_ipc::GuiFrame`]
 //! at ~30 Hz.  When the client disconnects the task loops back and waits for the
 //! next connection.
 //!
