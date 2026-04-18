@@ -135,7 +135,7 @@ impl FfbQueue {
 mod tests {
     use super::*;
 
-    #[expect(clippy::unwrap_used, reason = "test code — panics are the failure mode")]
+    #![expect(clippy::unwrap_used, reason = "test code — panics are the failure mode")]
 
     #[test]
     fn from_bytes_and_round_trip() {
