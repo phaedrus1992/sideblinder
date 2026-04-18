@@ -6,6 +6,7 @@ members = [
     "crates/sideblinder-diag",
     "crates/sideblinder-ipc",
     "crates/sideblinder-gui",
+    "crates/sideblinder-driver",
 ]
 
 [workspace.package]

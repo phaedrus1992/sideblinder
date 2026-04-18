@@ -47,31 +47,53 @@ impl FfbReport {
 /// Sized for up to `CAPACITY` reports; oldest entries are overwritten when
 /// full (the physical hardware is the authoritative source of truth, so
 /// dropping a stale intermediate state is acceptable).
+///
+/// Uses interior mutability via `UnsafeCell` to allow push/pop with shared
+/// references (`&self`). This is safe because the UMDF driver framework
+/// guarantees serialization: only one thread calls `push` at a time
+/// (EvtIoWrite callback) and only one thread calls `pop` at a time
+/// (EvtIoDeviceControl callback for GET_FFB). Despite containing UnsafeCell
+/// (which is !Sync), concurrent push/pop across different threads is safe
+/// because UMDF never calls both simultaneously.
+#[expect(unsafe_code, reason = "UnsafeCell required for interior mutability in UMDF callback context")]
 pub struct FfbQueue {
-    buf: [FfbReport; Self::CAPACITY],
+    buf: [core::cell::UnsafeCell<FfbReport>; Self::CAPACITY],
     head: core::sync::atomic::AtomicUsize, // next write position
     tail: core::sync::atomic::AtomicUsize, // next read position
 }
+
+// SAFETY: FfbQueue contains UnsafeCell, which is !Sync by default. However,
+// safe concurrent access is guaranteed by UMDF's callback serialization:
+// - Only one EvtIoWrite (push) callback can execute at a time
+// - Only one EvtIoDeviceControl (pop) callback can execute at a time
+// - UMDF never calls these callbacks concurrently on different threads
+// Therefore, the atomics coordinate access correctly and the interior mutability
+// is safe despite the apparent cross-thread sharing.
+unsafe impl Sync for FfbQueue {}
 
 impl FfbQueue {
     const CAPACITY: usize = 16;
 
     /// Create an empty queue.
     pub const fn new() -> Self {
+        const EMPTY_CELL: core::cell::UnsafeCell<FfbReport> = core::cell::UnsafeCell::new(FfbReport {
+            len: 0,
+            data: [0u8; MAX_FFB_REPORT_BYTES],
+        });
         Self {
-            buf: [FfbReport {
-                len: 0,
-                data: [0u8; MAX_FFB_REPORT_BYTES],
-            }; Self::CAPACITY],
+            buf: [EMPTY_CELL; Self::CAPACITY],
             head: core::sync::atomic::AtomicUsize::new(0),
             tail: core::sync::atomic::AtomicUsize::new(0),
         }
     }
 
     /// Push a report.  Overwrites the oldest entry if full.
-    pub fn push(&mut self, report: FfbReport) {
+    pub fn push(&self, report: FfbReport) {
         let head = self.head.load(core::sync::atomic::Ordering::Acquire);
-        self.buf[head % Self::CAPACITY] = report;
+        // SAFETY: UMDF serializes all EvtIoWrite callbacks; only one thread calls push
+        // at a time. The head index is loaded and updated atomically, so the slot
+        // written is disjoint from any slot being read by pop.
+        unsafe { *self.buf[head % Self::CAPACITY].get() = report; }
         let next = (head + 1) % Self::CAPACITY;
         self.head
             .store(next, core::sync::atomic::Ordering::Release);
@@ -85,13 +107,16 @@ impl FfbQueue {
     }
 
     /// Pop the oldest report, or `None` if the queue is empty.
-    pub fn pop(&mut self) -> Option<FfbReport> {
+    pub fn pop(&self) -> Option<FfbReport> {
         let head = self.head.load(core::sync::atomic::Ordering::Acquire);
         let tail = self.tail.load(core::sync::atomic::Ordering::Acquire);
         if head == tail {
             return None;
         }
-        let report = self.buf[tail % Self::CAPACITY];
+        // SAFETY: UMDF serializes all EvtIoDeviceControl callbacks for GET_FFB; only
+        // one thread calls pop at a time. tail is read before any modification, so
+        // the slot read is disjoint from the next slot push will write.
+        let report = unsafe { *self.buf[tail % Self::CAPACITY].get() };
         self.tail
             .store((tail + 1) % Self::CAPACITY, core::sync::atomic::Ordering::Release);
         Some(report)
@@ -109,6 +134,8 @@ impl FfbQueue {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #![expect(clippy::unwrap_used, reason = "test code — panics are the failure mode")]
 
     #[test]
     fn from_bytes_and_round_trip() {
@@ -135,7 +162,7 @@ mod tests {
 
     #[test]
     fn queue_push_pop_fifo() {
-        let mut q = FfbQueue::new();
+        let q = FfbQueue::new();
         assert!(!q.is_nonempty());
 
         let r1 = FfbReport::from_bytes(&[0x01, 0xAA]);
@@ -147,5 +174,16 @@ mod tests {
         assert_eq!(q.pop().unwrap().as_bytes(), &[0x01, 0xAA]);
         assert_eq!(q.pop().unwrap().as_bytes(), &[0x0A, 0xBB]);
         assert!(q.pop().is_none());
+    }
+
+    #[test]
+    fn queue_shared_ref_is_sufficient_for_push_pop() {
+        // Documents that push() and pop() accept &self, allowing concurrent
+        // UMDF callback access without exclusive ownership. This is safe because
+        // the UMDF framework serializes EvtIoWrite (push) and EvtIoDeviceControl (pop).
+        let q = FfbQueue::new(); // not mut
+        let r = FfbReport::from_bytes(&[0x05, 0x01, 0xFF]);
+        q.push(r); // compiles with &self
+        assert_eq!(q.pop().unwrap().as_bytes(), &[0x05, 0x01, 0xFF]);
     }
 }

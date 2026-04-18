@@ -70,6 +70,23 @@
         'custom.regex',
       ],
     },
+
+    // Windows Driver Kit (WDK) - keep within 10.0.* series
+    {
+      matchDatasources: [
+        'nuget',
+      ],
+      matchPackagePatterns: [
+        'Microsoft\\.Windows\\.DriverKit\\.Wdk',
+      ],
+      groupName: 'Windows Driver Kit',
+      groupSlug: 'wdk',
+      // Only allow patch and minor updates within the 10.0.* version range
+      allowedVersions: '/^10\\.0\\..+$/',
+      schedule: [
+        'before 3am on Monday',
+      ],
+    },
   ],
 
   // Custom managers for non-standard dependency sources

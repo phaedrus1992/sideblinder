@@ -157,7 +157,28 @@ JAVA_HOME=/opt/homebrew/opt/openjdk@21 \
 The decompiled C is not included in this repository as it is a derivative of
 Microsoft's copyrighted code.
 
-### Reference repositories
+### Reference code and implementations
+
+Full source code of reference projects is available in the `reference/` directory
+for local study and comparison without needing to clone external repositories:
+
+- **Joystick Gremlin** — feature-rich joystick input mapper with plugin architecture
+  and profile system. Useful for understanding multi-device input handling patterns
+  and UI state management.
+- **MW5_FFB** — MechWarrior 5 force-feedback plugin. Small focused codebase showing
+  FFB effect application and game integration patterns.
+- **vJoy** — Virtual joystick driver for Windows. Reference architecture for virtual
+  device emulation and driver communication.
+
+Use `reference/` to study:
+- Architecture patterns for multi-device input handling
+- FFB effect mapping and application
+- Virtual device driver design
+- Plugin and profile configuration systems
+
+### Reference repositories (external)
+
+For latest versions and updates to reference projects:
 
 - [Joystick Gremlin](https://github.com/WhiteMagic/JoystickGremlin)
 - [MW5_FFB](https://github.com/HappyFox/MW5_FFB)
