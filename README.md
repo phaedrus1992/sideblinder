@@ -1,3 +1,16 @@
+# **APOLOGIES FOR THE ABRUPT END TO THIS PROJECT**
+
+I will happily accept pull requests and such for anyone who gets it working,
+but my Windows machine finally died, so I have no reason to work on it
+anymore. This coincides with my discovery that Mechwarrior 5 runs _perfectly_
+on my ARM Mac under CrossOver.
+
+I might try to do something similar over there, as WINE is so good it
+duplicates Windows perfectly and the joystick exhibits the exact same problem.
+(lol)
+
+But WINE is a heck of a lot easier to hack on. So we'll see.
+
 # Sideblinder
 
 Connect a Microsoft Sidewinder Force Feedback 2 joystick to Windows 11 as if
