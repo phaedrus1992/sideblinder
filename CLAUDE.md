@@ -1,5 +1,43 @@
 # Sideblinder — Project Instructions
 
+## Building
+
+### Windows: `-j 1` required for driver builds
+
+Any `cargo` command that transitively builds `sideblinder-driver` must run with
+`-j 1` (or `CARGO_BUILD_JOBS=1`) on Windows. That includes `--workspace` builds,
+`cargo clippy --all-targets`, and `cargo test`, since `sideblinder-driver` is a
+default workspace member.
+
+```bash
+CARGO_BUILD_JOBS=1 cargo build -p sideblinder-driver
+# or for any workspace-wide command:
+CARGO_BUILD_JOBS=1 cargo build --workspace --locked
+```
+
+**Why:** `wdk-macros` 0.5.1 (a transitive dep via `wdk`) races on a shared
+`.lock` file inside `target/.../scratch-*/out/wdk_macros_ast_fragments/` during
+parallel proc-macro expansion. Under contention, Windows' `LockFileEx` returns
+`ERROR_INVALID_FUNCTION (os error 1)` instead of the expected lock-violation
+error, and the build fails with `unable to create file lock guard, unable to
+obtain file lock, Incorrect function. (os error 1)`. Upstream fix in flight at
+[microsoft/windows-drivers-rs#463](https://github.com/microsoft/windows-drivers-rs/pull/463)
+(migrates from `fs4` to `std::File::lock()`); revisit `-j 1` once that lands.
+
+The race only happens on the *first* build after `cargo clean` (when the
+`cached_function_info_map.json` cache is empty). Once the cache is populated,
+subsequent parallel builds are fine. CI always starts clean, so CI uses
+`-j 1` unconditionally; see `.github/workflows/ci.yml`.
+
+### Don't build from `\\wsl$\...` / WSL drive mounts
+
+Check out and build the tree on a native NTFS path (e.g. `C:\...`). Building
+from `\\wsl$\Ubuntu` or a mapped WSL drive (`W:`, etc.) fails at rustc's own
+incremental compilation session lock with the same `ERROR_INVALID_FUNCTION`
+error — the WSL 9P filesystem doesn't implement `LockFileEx` at all. Unlike the
+wdk-macros bug, this one isn't fixable by `-j 1`; the filesystem itself can't
+satisfy the API.
+
 ## Versioning
 
 This project uses [Semantic Versioning](https://semver.org/). Every PR that includes significant
@@ -156,3 +194,34 @@ Closes #N"
 ```
 
 Do not create Yaks tasks (`yx add`, `yx state`, etc.) for this project.
+
+## Reference Code
+
+The `reference/` directory contains full source code of related projects for local
+study and architectural reference. These are **not dependencies** — they are read-only
+reference implementations to learn from.
+
+### When to use reference code
+
+- **Study patterns:** Before designing a feature (e.g., multi-device input handling,
+  plugin architecture), search `reference/` to see how established projects solve it
+- **Verify design decisions:** When uncertain about an approach, compare against
+  reference implementations
+- **Understand compatibility:** Check how other drivers/apps interact with the same
+  hardware or Windows APIs
+
+### Rules for using reference code
+
+1. **Never copy code directly** — always understand and rewrite in Sideblinder's style
+2. **Credit inspiration** — if a reference implementation influences a design decision
+   or informs significant logic, note it in code comments (e.g., `// Inspired by vJoy's device state tracking`)
+3. **Don't blindly follow patterns** — Sideblinder may have different constraints
+   (safety, driver signing, Windows version support). Adapt, don't replicate
+4. **Keep reference code in sync** — treat `reference/` as snapshots. If you use a
+   reference project's pattern and later find it has a bug or improvement, consider
+   investigating the current upstream and updating your code accordingly
+5. **Never modify reference code** — if you find bugs in reference projects, report
+   them upstream; do not patch `reference/` locally
+
+These boundaries preserve reference code as a **learning resource** while keeping
+Sideblinder's codebase clean and original.

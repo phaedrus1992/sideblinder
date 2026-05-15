@@ -15,19 +15,30 @@ Thank you for your interest in contributing.
 
 ### Build
 
+> **Windows:** every workspace command below must run with `-j 1` /
+> `CARGO_BUILD_JOBS=1` because `sideblinder-driver` pulls in `wdk-macros`
+> 0.5.1, which has a parallel-proc-macro race that manifests as
+> `Incorrect function. (os error 1)`. See `CLAUDE.md` → *Building* for
+> the full story and upstream fix tracking. Also: don't check out or
+> build from `\\wsl$\...` / mapped WSL drives — the 9P filesystem
+> doesn't support `LockFileEx`.
+
 ```bash
-# Build all workspace crates (excludes the driver, which needs the WDK)
-cargo build --workspace --locked
+# Build all workspace crates (includes the driver on Windows; requires WDK)
+CARGO_BUILD_JOBS=1 cargo build --workspace --locked
 
 # Build and test
-cargo test --workspace --locked
+CARGO_BUILD_JOBS=1 cargo test --workspace --locked
 
 # Lint
-cargo clippy --all-targets --all-features -- -D warnings
+CARGO_BUILD_JOBS=1 cargo clippy --all-targets --all-features -- -D warnings
 
 # Format check (not yet enforced in CI but recommended locally)
 cargo fmt --check --all
 ```
+
+On Linux/macOS the `-j 1` constraint doesn't apply — the driver crate is
+Windows-only, so the bug is never hit.
 
 ### Running the app locally
 

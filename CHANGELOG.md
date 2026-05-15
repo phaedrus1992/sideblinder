@@ -7,12 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- IPC protocol versioning: GUI and app now detect version mismatches and fail fast with a user-facing error instead of silently corrupting data. Documented in `docs/ipc-protocol.md`.
+
 ### Changed
 - All project artifacts renamed from `sidewinder` to `sideblinder` (crate names, binary names,
   config directory, named pipe, tray class). References to the "Microsoft Sidewinder Force
   Feedback 2" hardware are unchanged.
 - Each crate now carries its own independent version. The workspace-level version is managed
   separately from individual crates.
+- **sideblinder-ipc**: IPC frame payload size increased from 22 to 23 bytes (now includes protocol version byte). Breaking change for external consumers of the wire format.
+- **sideblinder-driver**: Force feedback queue now accepts shared references for push/pop, allowing concurrent UMDF callback access without exclusive ownership.
 
 ## [0.7.0] - 2026-04-14
 

@@ -14,11 +14,17 @@ use thiserror::Error;
 /// Windows named pipe that the app creates and the GUI connects to.
 pub const PIPE_NAME: &str = r"\\.\pipe\SideblinderGui";
 
+/// Current protocol version byte, encoded in every frame payload.
+pub const PROTOCOL_VERSION: u8 = 1;
+
+/// Offset of the version byte within the payload (first byte).
+pub const VERSION_BYTE_OFFSET: usize = 0;
+
 /// Number of bytes used by the length prefix in a framed message.
 pub const FRAME_PREFIX_LEN: usize = 4;
 
-/// Number of bytes in the `GuiFrame` payload (wire format).
-pub const FRAME_PAYLOAD_LEN: usize = 22;
+/// Number of bytes in the `GuiFrame` payload (wire format, including version byte).
+pub const FRAME_PAYLOAD_LEN: usize = 23;
 
 /// Total wire size of one framed `GuiFrame`: prefix + payload.
 pub const FRAME_TOTAL_LEN: usize = FRAME_PREFIX_LEN + FRAME_PAYLOAD_LEN;
@@ -34,6 +40,9 @@ pub enum ProtocolError {
     /// The length prefix does not match the expected payload size.
     #[error("length mismatch: expected {expected}, got {got}")]
     LengthMismatch { expected: usize, got: usize },
+    /// The version byte in the frame header does not match the expected version.
+    #[error("version mismatch: expected {expected}, got {got}")]
+    VersionMismatch { expected: u8, got: u8 },
 }
 
 // ── GuiFrame ──────────────────────────────────────────────────────────────────
@@ -45,18 +54,20 @@ pub enum ProtocolError {
 ///
 /// # Wire format
 ///
-/// The struct is serialised field-by-field in little-endian order:
+/// The struct is serialised field-by-field in little-endian order, prefixed
+/// with a protocol version byte for forward compatibility:
 ///
 /// | Offset | Size | Field        |
 /// |--------|------|--------------|
-/// | 0      | 16   | `axes`       |
-/// | 16     | 2    | `buttons`    |
-/// | 18     | 1    | `pov`        |
-/// | 19     | 1    | `connected`  |
-/// | 20     | 1    | `ffb_enabled`|
-/// | 21     | 1    | `ffb_gain`   |
+/// | 0      | 1    | `version`    |
+/// | 1      | 16   | `axes`       |
+/// | 17     | 2    | `buttons`    |
+/// | 19     | 1    | `pov`        |
+/// | 20     | 1    | `connected`  |
+/// | 21     | 1    | `ffb_enabled`|
+/// | 22     | 1    | `ffb_gain`   |
 ///
-/// Total: 22 bytes.
+/// Total: 23 bytes (1 version + 22 data).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct GuiFrame {
     /// Raw axis values `[X, Y, Rz, Slider, …]` from the HID input state.
@@ -74,25 +85,26 @@ pub struct GuiFrame {
 }
 
 impl GuiFrame {
-    /// Serialise into a 22-byte payload (little-endian fields).
+    /// Serialise into a 23-byte payload (version byte + little-endian fields).
     ///
     /// This is the raw payload; call [`encode`](GuiFrame::encode) to get a
     /// length-prefixed frame ready for the pipe.
     #[must_use]
     pub fn to_payload(&self) -> [u8; FRAME_PAYLOAD_LEN] {
         let mut out = [0u8; FRAME_PAYLOAD_LEN];
+        out[0] = PROTOCOL_VERSION;
         for (i, &ax) in self.axes.iter().enumerate() {
             let b = ax.to_le_bytes();
-            out[i * 2] = b[0];
-            out[i * 2 + 1] = b[1];
+            out[1 + i * 2] = b[0];
+            out[1 + i * 2 + 1] = b[1];
         }
         let btn = self.buttons.to_le_bytes();
-        out[16] = btn[0];
-        out[17] = btn[1];
-        out[18] = self.pov;
-        out[19] = self.connected;
-        out[20] = self.ffb_enabled;
-        out[21] = self.ffb_gain;
+        out[17] = btn[0];
+        out[18] = btn[1];
+        out[19] = self.pov;
+        out[20] = self.connected;
+        out[21] = self.ffb_enabled;
+        out[22] = self.ffb_gain;
         out
     }
 
@@ -104,6 +116,8 @@ impl GuiFrame {
     ///
     /// Returns [`ProtocolError::TooShort`] if `payload` is shorter than
     /// [`FRAME_PAYLOAD_LEN`].
+    /// Returns [`ProtocolError::VersionMismatch`] if the version byte does not match
+    /// [`PROTOCOL_VERSION`].
     pub fn from_payload(payload: &[u8]) -> Result<Self, ProtocolError> {
         if payload.len() < FRAME_PAYLOAD_LEN {
             return Err(ProtocolError::TooShort {
@@ -111,17 +125,25 @@ impl GuiFrame {
                 have: payload.len(),
             });
         }
+        // Check version byte first
+        let version = payload[0];
+        if version != PROTOCOL_VERSION {
+            return Err(ProtocolError::VersionMismatch {
+                expected: PROTOCOL_VERSION,
+                got: version,
+            });
+        }
         let axes = std::array::from_fn(|i| {
-            i16::from_le_bytes([payload[i * 2], payload[i * 2 + 1]])
+            i16::from_le_bytes([payload[1 + i * 2], payload[1 + i * 2 + 1]])
         });
-        let buttons = u16::from_le_bytes([payload[16], payload[17]]);
+        let buttons = u16::from_le_bytes([payload[17], payload[18]]);
         Ok(Self {
             axes,
             buttons,
-            pov: payload[18],
-            connected: payload[19],
-            ffb_enabled: payload[20],
-            ffb_gain: payload[21],
+            pov: payload[19],
+            connected: payload[20],
+            ffb_enabled: payload[21],
+            ffb_gain: payload[22],
         })
     }
 
@@ -131,7 +153,7 @@ impl GuiFrame {
         let mut out = [0u8; FRAME_TOTAL_LEN];
         #[expect(
             clippy::cast_possible_truncation,
-            reason = "FRAME_PAYLOAD_LEN = 22, always fits in u32"
+            reason = "FRAME_PAYLOAD_LEN = 23, always fits in u32"
         )]
         let len_bytes = (FRAME_PAYLOAD_LEN as u32).to_le_bytes();
         out[..FRAME_PREFIX_LEN].copy_from_slice(&len_bytes);
@@ -233,9 +255,11 @@ mod tests {
             ..Default::default()
         };
         let payload = frame.to_payload();
+        // Version byte at offset 0, axes start at offset 1
+        assert_eq!(payload[0], PROTOCOL_VERSION, "version byte");
         // Little-endian: low byte first.
-        assert_eq!(payload[0], 0x02, "low byte of axis 0");
-        assert_eq!(payload[1], 0x01, "high byte of axis 0");
+        assert_eq!(payload[1], 0x02, "low byte of axis 0");
+        assert_eq!(payload[2], 0x01, "high byte of axis 0");
     }
 
     #[test]
@@ -250,8 +274,42 @@ mod tests {
     }
 
     #[test]
-    fn frame_total_len_is_26() {
+    fn frame_total_len_is_27() {
         // Regression guard: protocol is versioned by this constant.
-        assert_eq!(FRAME_TOTAL_LEN, 26);
+        // Changed from 26 to 27 when version byte was added.
+        assert_eq!(FRAME_TOTAL_LEN, 27);
+    }
+
+    #[test]
+    fn decode_rejects_wrong_version() {
+        let frame = sample_frame();
+        let mut payload = frame.to_payload();
+        // Corrupt the version byte to simulate an old v0 frame
+        payload[0] = 0;
+        let err = GuiFrame::from_payload(&payload).expect_err("must fail on version mismatch");
+        assert_eq!(err, ProtocolError::VersionMismatch {
+            expected: PROTOCOL_VERSION,
+            got: 0
+        });
+    }
+
+    #[test]
+    fn decode_rejects_version_2() {
+        let frame = sample_frame();
+        let mut payload = frame.to_payload();
+        // Pretend a future version sent v2
+        payload[0] = 2;
+        let err = GuiFrame::from_payload(&payload).expect_err("must fail on unknown version");
+        assert_eq!(err, ProtocolError::VersionMismatch {
+            expected: PROTOCOL_VERSION,
+            got: 2
+        });
+    }
+
+    #[test]
+    fn version_byte_is_first_payload_byte() {
+        let frame = sample_frame();
+        let payload = frame.to_payload();
+        assert_eq!(payload[0], PROTOCOL_VERSION, "version is first byte");
     }
 }

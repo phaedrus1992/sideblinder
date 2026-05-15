@@ -1,14 +1,28 @@
 name: CI
 
+# NOTE: Windows jobs build sideblinder-driver with `-j 1`. This is NOT a
+# performance tuning — removing it will break the build. `wdk-macros` 0.5.1
+# (a transitive dep via `wdk`) has a race during parallel proc-macro
+# expansion: two threads call File::create on the same scratch `.lock` file
+# and then LockFileEx, and Windows returns ERROR_INVALID_FUNCTION (os error 1)
+# instead of the expected lock-violation error. Other crates build in parallel.
+# See CLAUDE.md -> Building for details. Upstream fix tracked at
+# microsoft/windows-drivers-rs#463 (migrating fs4 -> std::File::lock); once
+# that lands, `-j 1` can be dropped here.
+
 on:
   push:
     branches: [main]
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   clippy:
     name: Clippy
-    runs-on: windows-latest
+    runs-on: windows-2022
     permissions:
       contents: read
     steps:
@@ -23,15 +37,62 @@ jobs:
           toolchain: 1.94.1
           components: clippy
 
+      - name: Install LLVM 17
+        shell: pwsh
+        run: |
+          $llvmVersion = "17.0.6"
+          $llvmUrl = "https://github.com/llvm/llvm-project/releases/download/llvmorg-$llvmVersion/LLVM-$llvmVersion-win64.exe"
+          $llvmInstaller = "$env:TEMP\LLVM-$llvmVersion-win64.exe"
+          Write-Host "Downloading LLVM $llvmVersion from official release..."
+          curl.exe -L -o $llvmInstaller $llvmUrl
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: Failed to download LLVM"
+            exit 1
+          }
+          Write-Host "Installing LLVM $llvmVersion..."
+          & $llvmInstaller /S /D="C:\LLVM"
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: Failed to install LLVM"
+            exit 1
+          }
+          Write-Host "LLVM installed successfully"
+
+      - name: Verify Windows SDK and WDK
+        shell: pwsh
+        run: |
+          Write-Host "Verifying Windows SDK and WDK installation..."
+
+          # Verify WDK headers are available (windows-2022 includes them)
+          $wdk_paths = @(
+              "C:\Program Files (x86)\Windows Kits\10\Include",
+              "C:\Program Files\Windows Kits\10\Include"
+          )
+
+          $found = $false
+          foreach ($path in $wdk_paths) {
+              if (Test-Path $path) {
+                  Write-Host "✓ Found Windows Kits at: $path"
+                  $found = $true
+                  break
+              }
+          }
+
+          if (-not $found) {
+              Write-Host "ERROR: Windows Kits not found - WDK headers are required"
+              exit 1
+          }
+
       - name: Cache dependencies
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4  # v2.9.1
 
       - name: Clippy
-        run: cargo clippy --all-targets --all-features -- -D warnings
+        run: |
+          cargo clippy --workspace --exclude sideblinder-driver --all-targets --all-features -- -D warnings
+          cargo clippy -p sideblinder-driver -j 1 --all-targets --all-features -- -D warnings
 
   test:
     name: Test
-    runs-on: windows-latest
+    runs-on: windows-2022
     needs: clippy
     permissions:
       contents: read
@@ -46,16 +107,79 @@ jobs:
         with:
           toolchain: 1.94.1
 
+      - name: Cache LLVM 17 installer
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7  # v5.0.4
+        with:
+          path: C:\tools\LLVM-17.0.6-win64.exe
+          key: llvm-17.0.6-win64
+
+      - name: Install LLVM 17
+        shell: pwsh
+        run: |
+          $llvmVersion = "17.0.6"
+          $llvmUrl = "https://github.com/llvm/llvm-project/releases/download/llvmorg-$llvmVersion/LLVM-$llvmVersion-win64.exe"
+          $llvmInstaller = "C:\tools\LLVM-$llvmVersion-win64.exe"
+          $toolsDir = "C:\tools"
+
+          if (-not (Test-Path $llvmInstaller)) {
+            if (-not (Test-Path $toolsDir)) {
+              New-Item -ItemType Directory -Path $toolsDir -Force | Out-Null
+            }
+            Write-Host "Downloading LLVM $llvmVersion from official release..."
+            curl.exe -L -o $llvmInstaller $llvmUrl
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "ERROR: Failed to download LLVM"
+              exit 1
+            }
+          } else {
+            Write-Host "Using cached LLVM installer"
+          }
+
+          Write-Host "Installing LLVM $llvmVersion..."
+          & $llvmInstaller /S /D="C:\LLVM"
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: Failed to install LLVM"
+            exit 1
+          }
+          Write-Host "LLVM installed successfully"
+
+      - name: Verify Windows SDK and WDK
+        shell: pwsh
+        run: |
+          Write-Host "Verifying Windows SDK and WDK installation..."
+
+          # Verify WDK headers are available (windows-2022 includes them)
+          $wdk_paths = @(
+              "C:\Program Files (x86)\Windows Kits\10\Include",
+              "C:\Program Files\Windows Kits\10\Include"
+          )
+
+          $found = $false
+          foreach ($path in $wdk_paths) {
+              if (Test-Path $path) {
+                  Write-Host "✓ Found Windows Kits at: $path"
+                  $found = $true
+                  break
+              }
+          }
+
+          if (-not $found) {
+              Write-Host "ERROR: Windows Kits not found - WDK headers are required"
+              exit 1
+          }
+
       - name: Cache dependencies
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4  # v2.9.1
 
       - name: Test
-        run: cargo test --locked
+        run: |
+          cargo test --workspace --exclude sideblinder-driver --locked
+          cargo test -p sideblinder-driver -j 1 --locked
 
   build:
     name: Release Build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: windows-latest
+    runs-on: windows-2022
     needs: test
     permissions:
       contents: read
@@ -70,11 +194,74 @@ jobs:
         with:
           toolchain: 1.94.1
 
+      - name: Cache LLVM 17 installer
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7  # v5.0.4
+        with:
+          path: C:\tools\LLVM-17.0.6-win64.exe
+          key: llvm-17.0.6-win64
+
+      - name: Install LLVM 17
+        shell: pwsh
+        run: |
+          $llvmVersion = "17.0.6"
+          $llvmUrl = "https://github.com/llvm/llvm-project/releases/download/llvmorg-$llvmVersion/LLVM-$llvmVersion-win64.exe"
+          $llvmInstaller = "C:\tools\LLVM-$llvmVersion-win64.exe"
+          $toolsDir = "C:\tools"
+
+          if (-not (Test-Path $llvmInstaller)) {
+            if (-not (Test-Path $toolsDir)) {
+              New-Item -ItemType Directory -Path $toolsDir -Force | Out-Null
+            }
+            Write-Host "Downloading LLVM $llvmVersion from official release..."
+            curl.exe -L -o $llvmInstaller $llvmUrl
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "ERROR: Failed to download LLVM"
+              exit 1
+            }
+          } else {
+            Write-Host "Using cached LLVM installer"
+          }
+
+          Write-Host "Installing LLVM $llvmVersion..."
+          & $llvmInstaller /S /D="C:\LLVM"
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "ERROR: Failed to install LLVM"
+            exit 1
+          }
+          Write-Host "LLVM installed successfully"
+
+      - name: Verify Windows SDK and WDK
+        shell: pwsh
+        run: |
+          Write-Host "Verifying Windows SDK and WDK installation..."
+
+          # Verify WDK headers are available (windows-2022 includes them)
+          $wdk_paths = @(
+              "C:\Program Files (x86)\Windows Kits\10\Include",
+              "C:\Program Files\Windows Kits\10\Include"
+          )
+
+          $found = $false
+          foreach ($path in $wdk_paths) {
+              if (Test-Path $path) {
+                  Write-Host "✓ Found Windows Kits at: $path"
+                  $found = $true
+                  break
+              }
+          }
+
+          if (-not $found) {
+              Write-Host "ERROR: Windows Kits not found - WDK headers are required"
+              exit 1
+          }
+
       - name: Cache dependencies
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4  # v2.9.1
 
       - name: Build
-        run: cargo build --release --locked
+        run: |
+          cargo build --workspace --exclude sideblinder-driver --release --locked
+          cargo build -p sideblinder-driver -j 1 --release --locked
 
       - name: Get version
         id: version

@@ -1,7 +1,7 @@
 //! `PipeBackend`: reads live `GuiFrame`s from a running `sideblinder-app` instance
 //! via the named pipe `\\.\pipe\SideblinderGui`.
 //!
-//! A background thread connects to the pipe and reads 26-byte length-prefixed
+//! A background thread connects to the pipe and reads 27-byte length-prefixed
 //! frames in a blocking loop, forwarding each frame via an `mpsc` channel.  The
 //! egui render thread calls `poll()` each frame to drain the latest value.
 
@@ -133,7 +133,7 @@ mod windows_impl {
         Ok(PipeBackend { rx, alive })
     }
 
-    /// Blocking reader loop: reads 26-byte frames from the pipe until the
+    /// Blocking reader loop: reads 27-byte frames from the pipe until the
     /// server disconnects or a read error occurs.
     #[expect(
         clippy::needless_pass_by_value,
@@ -149,7 +149,7 @@ mod windows_impl {
                 let mut bytes_read: u32 = 0;
                 #[expect(
                     clippy::cast_possible_truncation,
-                    reason = "FRAME_TOTAL_LEN = 26, always fits in u32"
+                    reason = "FRAME_TOTAL_LEN = 27, always fits in u32"
                 )]
                 // SAFETY: handle is valid; buf[offset..] slice pointer and length are correct.
                 let ok = unsafe {
